@@ -3,24 +3,33 @@ name: nycbs
 services:
   init-volumes:
     image: busybox
+    volumes:
+      - streamlit_logs:/var/log/nycbs/streamlit
+      - jupyter_logs:/var/log/nycbs/jupyter
     command: >
       /bin/sh -c "
-        mkdir -p /var/log/nycbs/{jupyter,streamlit,spark,delta}/{error,info} &&
+        # Create Streamlit log directories with proper ownership
+        mkdir -p /var/log/nycbs/streamlit/error &&
+        mkdir -p /var/log/nycbs/streamlit/info &&
+        touch /var/log/nycbs/streamlit/error/.keep &&
+        touch /var/log/nycbs/streamlit/info/.keep &&
+        touch /var/log/nycbs/streamlit/error/streamlit.log &&
+        touch /var/log/nycbs/streamlit/info/streamlit.log &&
         chown -R 1000:1000 /var/log/nycbs &&
-        chmod -R 770 /var/log/nycbs &&
-        chown -R 1000:1000 /data/landing /data/bronze /data/silver /data/gold /warehouse &&
-        chmod -R 770 /data/landing /data/bronze /data/silver /data/gold /warehouse
+        chown -R 1000:1000 /var/log/nycbs/streamlit &&
+        chmod -R 770 /var/log/nycbs/streamlit &&
+        chmod 660 /var/log/nycbs/streamlit/error/streamlit.log &&
+        chmod 660 /var/log/nycbs/streamlit/info/streamlit.log &&
+        
+        # Create Jupyter log directories
+        mkdir -p /var/log/nycbs/jupyter/error &&
+        touch /var/log/nycbs/jupyter/jupyter.log &&
+        touch /var/log/nycbs/jupyter/error/error.log &&
+        chown -R 1000:1000 /var/log/nycbs/jupyter &&
+        chmod -R 770 /var/log/nycbs/jupyter &&
+        chmod 660 /var/log/nycbs/jupyter/jupyter.log &&
+        chmod 660 /var/log/nycbs/jupyter/error/error.log
       "
-    volumes:
-      - data_landing:/data/landing
-      - data_bronze:/data/bronze
-      - data_silver:/data/silver
-      - data_gold:/data/gold
-      - warehouse:/warehouse
-      - jupyter_logs:/var/log/nycbs/jupyter
-      - streamlit_logs:/var/log/nycbs/streamlit
-      - spark_logs:/var/log/nycbs/spark
-      - delta_logs:/var/log/nycbs/delta
     user: root
 
   elasticsearch:
@@ -125,39 +134,39 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: spark-iceberg
-    depends_on:
-      init-volumes:
-        condition: service_completed_successfully
-      elasticsearch:
-        condition: service_healthy
-      logstash:
-        condition: service_healthy
-    ports:
-      - "127.0.0.1:8888:8888"  # Jupyter Notebook
-      - "127.0.0.1:4041:4040"  # Spark UI
-      - "127.0.0.1:8501:8501"  # Streamlit
     volumes:
       - ./notebooks:/home/aldamiz/notebooks:rw
       - ./conf:/home/aldamiz/conf:ro
       - ./src:/home/aldamiz/src:ro
-      # Data lake volumes
-      - data_landing:/home/aldamiz/data/landing:rw
-      - data_bronze:/home/aldamiz/data/bronze:rw
-      - data_silver:/home/aldamiz/data/silver:rw
-      - data_gold:/home/aldamiz/data/gold:rw
-      # Separated log volumes
       - streamlit_logs:/var/log/nycbs/streamlit:rw
       - spark_logs:/var/log/nycbs/spark:rw
       - jupyter_logs:/var/log/nycbs/jupyter:rw
       - delta_logs:/var/log/nycbs/delta:rw
+      - data_landing:/home/aldamiz/data/landing:rw
+      - data_bronze:/home/aldamiz/data/bronze:rw
+      - data_silver:/home/aldamiz/data/silver:rw
+      - data_gold:/home/aldamiz/data/gold:rw
       - warehouse:/home/aldamiz/warehouse:rw
+      - fallback_logs:/home/aldamiz/.streamlit/logs:rw
     environment:
       - JUPYTER_TOKEN=${JUPYTER_TOKEN:-defaulttoken}
       - PYTHONPATH=/home/aldamiz/src
       - SPARK_CONF_DIR=/home/aldamiz/conf
       - DATA_DIR=/home/aldamiz/data
       - WAREHOUSE_DIR=/home/aldamiz/warehouse
-      - LOG_DIR=/var/log/nycbs
+      - LOG_DIR=/var/log/nycbs/streamlit
+      - NB_USER=aldamiz
+      - NB_UID=1000
+      - NB_GID=1000
+      - HOME=/home/aldamiz
+    depends_on:
+      init-volumes:
+        condition: service_completed_successfully
+    user: root
+    ports:
+      - "127.0.0.1:8888:8888"  # Jupyter Notebook
+      - "127.0.0.1:4041:4040"  # Spark UI
+      - "127.0.0.1:8501:8501"  # Streamlit
     deploy:
       resources:
         limits:
@@ -194,15 +203,20 @@ volumes:
   # Data lake volumes
   data_landing:
     name: nycbs_data_landing
+    external: true
   data_bronze:
     name: nycbs_data_bronze
+    external: true
   data_silver:
     name: nycbs_data_silver
+    external: true
   data_gold:
     name: nycbs_data_gold
+    external: true
   # Warehouse volume
   warehouse:
     name: nycbs_warehouse
+    external: true
   # Separated log volumes
   streamlit_logs:
     name: nycbs_streamlit_logs
@@ -215,6 +229,9 @@ volumes:
     driver: local
   delta_logs:
     name: nycbs_delta_logs
+    driver: local
+  fallback_logs:
+    name: nycbs_fallback_logs
     driver: local
   # Elasticsearch data
   elasticsearch_data:

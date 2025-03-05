@@ -37,10 +37,19 @@ RUN usermod -l aldamiz jovyan && \
     usermod -d /home/aldamiz -m aldamiz && \
     ln -s /home/aldamiz /home/jovyan
 
+# Create necessary directories
+RUN mkdir -p /home/aldamiz/warehouse/{temp,checkpoints,eventlogs} && \
+    chown -R 1000:1000 /home/aldamiz/warehouse && \
+    chmod -R 770 /home/aldamiz/warehouse
+
+# Create data directories
+RUN mkdir -p /home/aldamiz/data/{landing,bronze,silver,gold} && \
+    chown -R 1000:1000 /home/aldamiz/data && \
+    chmod -R 770 /home/aldamiz/data
+
 # Create required directories
 RUN mkdir -p /home/aldamiz/conf \
              /home/aldamiz/src/{utils,dashboard} \
-             /home/aldamiz/data/{landing,bronze,silver,gold} \
              /home/aldamiz/warehouse/{temp,checkpoints,eventlogs,logs} \
              /home/aldamiz/.local/share/jupyter/runtime \
              /var/run/supervisor \
@@ -98,7 +107,6 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/spark/python:/usr/local/spark/python/lib/p
     SPARK_MASTER_HOST=0.0.0.0 \
     DATA_DIR=/home/aldamiz/data \
     WAREHOUSE_DIR=/home/aldamiz/warehouse \
-    LOG_DIR=/home/aldamiz/warehouse/logs \
     JUPYTER_TOKEN=63d106cc392403e80ab48013f73a6077e67035f64c6bf8e4 \
     NB_USER=aldamiz \
     NB_UID=1000 \
