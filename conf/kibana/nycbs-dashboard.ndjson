@@ -1,0 +1,96 @@
+{
+  "version": "7.17.0",
+  "objects": [
+    {
+      "id": "nycbs-dashboard",
+      "type": "dashboard",
+      "attributes": {
+        "title": "NYC Bike Share Dashboard Analytics",
+        "hits": 0,
+        "description": "Analytics and monitoring for the NYC Bike Share Streamlit Dashboard",
+        "panelsJSON": "[{\"gridData\":{\"x\":0,\"y\":0,\"w\":24,\"h\":8,\"i\":\"1\"},\"version\":\"7.17.0\",\"panelIndex\":\"1\",\"type\":\"visualization\",\"id\":\"user-activity\"},{\"gridData\":{\"x\":24,\"y\":0,\"w\":24,\"h\":8,\"i\":\"2\"},\"version\":\"7.17.0\",\"panelIndex\":\"2\",\"type\":\"visualization\",\"id\":\"data-loading-performance\"},{\"gridData\":{\"x\":0,\"y\":8,\"w\":24,\"h\":8,\"i\":\"3\"},\"version\":\"7.17.0\",\"panelIndex\":\"3\",\"type\":\"visualization\",\"id\":\"error-tracking\"},{\"gridData\":{\"x\":24,\"y\":8,\"w\":24,\"h\":8,\"i\":\"4\"},\"version\":\"7.17.0\",\"panelIndex\":\"4\",\"type\":\"visualization\",\"id\":\"view-usage\"}]",
+        "optionsJSON": "{\"hidePanelTitles\":false,\"useMargins\":true}",
+        "timeRestore": false,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
+        }
+      }
+    },
+    {
+      "id": "user-activity",
+      "type": "visualization",
+      "attributes": {
+        "title": "User Activity Over Time",
+        "visState": "{\"type\":\"line\",\"params\":{\"type\":\"line\",\"grid\":{\"categoryLines\":false},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true},\"title\":{\"text\":\"Active Sessions\"}}],\"seriesParams\":[{\"show\":true,\"type\":\"line\",\"mode\":\"normal\",\"data\":{\"label\":\"Active Sessions\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"lineWidth\":2}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"times\":[],\"addTimeMarker\":false,\"labels\":{},\"thresholdLine\":{\"show\":false,\"value\":10,\"width\":1,\"style\":\"full\",\"color\":\"#E7664C\"}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"timestamp\",\"timeRange\":{\"from\":\"now-24h\",\"to\":\"now\"},\"useNormalizedEsInterval\":true,\"scaleMetricValues\":false,\"interval\":\"auto\",\"drop_partials\":false,\"min_doc_count\":1,\"extended_bounds\":{}}}]}",
+        "uiStateJSON": "{}",
+        "description": "",
+        "savedSearchId": "user-sessions",
+        "version": 1
+      }
+    },
+    {
+      "id": "data-loading-performance",
+      "type": "visualization",
+      "attributes": {
+        "title": "Data Loading Performance",
+        "visState": "{\"type\":\"metrics\",\"params\":{\"id\":\"61ca57f0-469d-11e7-af02-69e470af7417\",\"type\":\"timeseries\",\"series\":[{\"id\":\"61ca57f1-469d-11e7-af02-69e470af7417\",\"color\":\"#68BC00\",\"split_mode\":\"everything\",\"metrics\":[{\"id\":\"61ca57f2-469d-11e7-af02-69e470af7417\",\"type\":\"avg\",\"field\":\"duration\"}],\"separate_axis\":0,\"axis_position\":\"right\",\"formatter\":\"number\",\"chart_type\":\"line\",\"line_width\":1,\"point_size\":1,\"fill\":0.5,\"stacked\":\"none\",\"label\":\"Avg Load Time (s)\"}],\"time_field\":\"timestamp\",\"index_pattern\":\"streamlit-*\",\"interval\":\"auto\",\"axis_position\":\"left\",\"axis_formatter\":\"number\",\"show_legend\":1},\"aggs\":[]}",
+        "uiStateJSON": "{}",
+        "description": "",
+        "version": 1
+      }
+    },
+    {
+      "id": "error-tracking",
+      "type": "visualization",
+      "attributes": {
+        "title": "Error Tracking",
+        "visState": "{\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMetricsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"error.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\",\"otherBucket\":false,\"otherBucketLabel\":\"Other\",\"missingBucket\":false,\"missingBucketLabel\":\"Missing\"}}]}",
+        "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+        "description": "",
+        "savedSearchId": "error-logs",
+        "version": 1
+      }
+    },
+    {
+      "id": "view-usage",
+      "type": "visualization",
+      "attributes": {
+        "title": "View Usage Distribution",
+        "visState": "{\"type\":\"pie\",\"params\":{\"type\":\"pie\",\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"isDonut\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"details.view.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+        "uiStateJSON": "{}",
+        "description": "",
+        "version": 1
+      }
+    },
+    {
+      "id": "user-sessions",
+      "type": "search",
+      "attributes": {
+        "title": "User Sessions",
+        "description": "",
+        "hits": 0,
+        "columns": ["session_id", "timestamp", "action", "details"],
+        "sort": [["timestamp", "desc"]],
+        "version": 1,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"streamlit-*\",\"highlightAll\":true,\"version\":true,\"query\":{\"query\":\"event_type:user_interaction\",\"language\":\"kuery\"},\"filter\":[]}"
+        }
+      }
+    },
+    {
+      "id": "error-logs",
+      "type": "search",
+      "attributes": {
+        "title": "Error Logs",
+        "description": "",
+        "hits": 0,
+        "columns": ["timestamp", "level", "message", "error"],
+        "sort": [["timestamp", "desc"]],
+        "version": 1,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"streamlit-*\",\"highlightAll\":true,\"version\":true,\"query\":{\"query\":\"level:ERROR\",\"language\":\"kuery\"},\"filter\":[]}"
+        }
+      }
+    }
+  ]
+} 

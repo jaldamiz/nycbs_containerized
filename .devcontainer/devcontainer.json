@@ -1,0 +1,33 @@
+{
+  "name": "NYCBS Spark Iceberg",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "spark-iceberg",
+  "workspaceFolder": "/home/aldamiz",
+  
+  // Set *default* container specific settings.json values on container create.
+  "settings": {
+    "python.defaultInterpreterPath": "/opt/conda/bin/python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+  
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-toolsai.jupyter",
+    "ms-azuretools.vscode-docker"
+  ],
+  
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [8888, 4040],
+  
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "echo 'Dev container is ready!'",
+  
+  // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  "remoteUser": "aldamiz"
+} 

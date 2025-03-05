@@ -1,0 +1,139 @@
+<mxfile host="65bd71144e">
+    <diagram id="prtHgNgQTEPvFCAcTncT" name="Container Architecture">
+        <mxGraphModel dx="2419" dy="936" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="network_container" value="NYCBS Data Platform Architecture" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#004D66;strokeColor=#6c8ebf;fontColor=#FFFFFF;fontSize=16;fontStyle=1;gradientColor=#E6F3FF;gradientDirection=north;shadow=1" parent="1" vertex="1">
+                    <mxGeometry y="40" width="1200" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="spark_iceberg" value="Spark Iceberg Development Environment" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#e6f3ff;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;fontColor=#000000;gradientColor=#ffffff;gradientDirection=north;shadow=1" parent="network_container" vertex="1">
+                    <mxGeometry x="60" y="60" width="200" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="jupyter_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjRjM3NzI2IiBkPSJNMjU2IDBDMTEzLjkgMCAwIDExMy45IDAgMjU2czExMy45IDI1NiAyNTYgMjU2czI1Ni0xMTMuOSAyNTYtMjU2UzM5OC4xIDAgMjU2IDB6bTEyOCAzNDcuNmMwIDExLjQtOS4yIDIwLjYtMjAuNiAyMC42SDEyOGMtMTEuNCAwLTIwLjYtOS4yLTIwLjYtMjAuNlYxNDRjMC0xMS40IDkuMi0yMC42IDIwLjYtMjAuNmgyMzUuM2MxMS40IDAgMjAuNiA5LjIgMjAuNiAyMC42djIwMy42eiIvPjxwYXRoIGZpbGw9IiNGRkYiIGQ9Ik0zMjAgMTYwSDEyOHYxOTRoMTkyVjE2MHptLTk2IDEyOGMtMTcuNyAwLTMyLTE0LjMtMzItMzJzMTQuMy0zMiAzMi0zMiAzMiAxNC4zIDMyIDMyLTE0LjMgMzItMzIgMzJ6Ii8+PC9zdmc+" parent="spark_iceberg" vertex="1">
+                    <mxGeometry x="20" y="50" width="50" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="spark_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjRTI1QTFDIiBkPSJNMzE4LjcgMjY4LjdjLS4yLTM2LjctMTYuNC03Mi4xLTQ0LjItODkuN2wtNzYuMS00OC4xYy01LjctMy42LTEzLjEtMi40LTE3LjIgMi45bC0xMS4zIDEzLjJjLTQuMS41LTguNiAxLjQtMTEuOSAyLjZjLTguOS0xNS44LTI1LjYtMjYuNi00NC44LTI2LjZjLTEzLjggMC0yNi41IDUuNi0zNS42IDE0LjdsLTIzLjQtMTQuN2MtNS43LTMuNi0xMy4xLTIuNC0xNy4yIDIuOWwtNzUuMyA4OC4xYy0xMy42IDE1LjktMTUuNCAzOS4yLTQuNC41Ny4zbDc2LjEgNDguMWM1LjcgMy42IDEzLjEgMi40IDE3LjItMi45bDExLjMtMTMuMmM0LjEtLjUgOC42LTEuNCAxMS45LTIuNmM4LjkgMTUuOCAyNS42IDI2LjYgNDQuOCAyNi42YzEzLjggMCAyNi41LTUuNiAzNS42LTE0LjdsMjMuNCAxNC43YzUuNyAzLjYgMTMuMSAyLjQgMTcuMi0yLjlsNzUuMy04OC4xYzEzLjYtMTUuOSAxNS40LTM5LjIgNC40LTU3LjN6TTIyNi4zIDM3Ni44bC02MC4xLTM3LjhjLTEzLjEtOC4yLTE1LjUtMjYuMy01LjYtMzguMmw1Ni4yLTY1LjhjMS43LTIgNC44LTIuNiA3LjItMS4yTDI4NCAyNzEuN2MxMy4xIDguMiAxNS41IDI2LjMgNS42IDM4LjJsLTU2LjIgNjUuOGMtMS43IDItNC44IDIuNi03LjIgMS4yeiIvPjwvc3ZnPg==" parent="spark_iceberg" vertex="1">
+                    <mxGeometry x="90" y="50" width="50" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="spark_ports" value="Ports:&#10;8888 (Jupyter)&#10;4040 (Spark UI)" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontColor=#000000;spacing=5;fontStyle=1;shadow=1" parent="spark_iceberg" vertex="1">
+                    <mxGeometry x="20" y="120" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dashboard" value="Data Visualization Dashboard" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#e8f5e8;strokeColor=#82b366;fontSize=14;fontStyle=1;fontColor=#000000;gradientColor=#ffffff;gradientDirection=north;shadow=1" parent="network_container" vertex="1">
+                    <mxGeometry x="320" y="60" width="200" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="streamlit_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjRkY0QjRCIiBkPSJNMjU2IDBDMTEzLjkgMCAwIDExMy45IDAgMjU2czExMy45IDI1NiAyNTYgMjU2czI1Ni0xMTMuOSAyNTYtMjU2UzM5OC4xIDAgMjU2IDB6bTAgNDQ4Yy0xMDYuMSAwLTE5Mi04NS45LTE5Mi0xOTJTMTQ5LjkgNjQgMjU2IDY0czE5MiA4NS45IDE5MiAxOTItODUuOSAxOTItMTkyIDE5MnoiLz48L3N2Zz4=" parent="dashboard" vertex="1">
+                    <mxGeometry x="75" y="50" width="50" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="dashboard_ports" value="Port:&#10;8501 (Streamlit)" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontColor=#000000;spacing=5;fontStyle=1;shadow=1" parent="dashboard" vertex="1">
+                    <mxGeometry x="20" y="120" width="160" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="elk_stack" value="Logging &amp; Monitoring (ELK Stack)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#fff8e6;strokeColor=#d6b656;fontSize=14;fontStyle=1;fontColor=#000000;gradientColor=#ffffff;gradientDirection=north;shadow=1" parent="network_container" vertex="1">
+                    <mxGeometry x="580" y="60" width="560" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="elasticsearch" value="Elasticsearch&#10;(Search &amp; Analytics Engine)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#004D66;strokeColor=#004D66;fontSize=12;fontStyle=1;fontColor=#FFFFFF;gradientColor=#006080;gradientDirection=north;shadow=1" parent="elk_stack" vertex="1">
+                    <mxGeometry x="20" y="50" width="160" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="es_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMDA1NTcxIiBkPSJNMjU2IDBDMTEzLjkgMCAwIDExMy45IDAgMjU2czExMy45IDI1NiAyNTYgMjU2czI1Ni0xMTMuOSAyNTYtMjU2UzM5OC4xIDAgMjU2IDB6bTAgNDQ4Yy0xMDYuMSAwLTE5Mi04NS45LTE5Mi0xOTJTMTQ5LjkgNjQgMjU2IDY0czE5MiA4NS45IDE5MiAxOTItODUuOSAxOTItMTkyIDE5MnoiLz48cGF0aCBmaWxsPSIjMDBCRkIzIiBkPSJNMjU2IDEyOGMtNzAuNyAwLTEyOCA1Ny4zLTEyOCAxMjhzNTcuMyAxMjggMTI4IDEyOHMxMjgtNTcuMyAxMjgtMTI4LTU3LjMtMTI4LTEyOC0xMjh6Ii8+PC9zdmc+" parent="elasticsearch" vertex="1">
+                    <mxGeometry x="55" y="50" width="50" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="es_desc" value="Stores &amp; indexes&#10;all log data" style="text;html=1;strokeColor=#004D66;fillColor=#E6F3FF;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontColor=#000000;fontStyle=1" parent="elasticsearch" vertex="1">
+                    <mxGeometry x="20" y="160" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="es_ports" value="Port: 9200" style="text;html=1;strokeColor=#004D66;fillColor=#E6F3FF;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1" parent="elasticsearch" vertex="1">
+                    <mxGeometry x="40" y="110" width="80" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="logstash" value="Logstash&#10;(Data Processing Pipeline)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#B35900;strokeColor=#B35900;fontSize=12;fontStyle=1;fontColor=#FFFFFF;gradientColor=#CC6600;gradientDirection=north;shadow=1" parent="elk_stack" vertex="1">
+                    <mxGeometry x="200" y="50" width="160" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="logstash_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjRkZDMDY5IiBkPSJNMjU2IDBDMTEzLjkgMCAwIDExMy45IDAgMjU2czExMy45IDI1NiAyNTYgMjU2czI1Ni0xMTMuOSAyNTYtMjU2UzM5OC4xIDAgMjU2IDB6bTAgNDQ4Yy0xMDYuMSAwLTE5Mi04NS45LTE5Mi0xOTJTMTQ5LjkgNjQgMjU2IDY0czE5MiA4NS45IDE5MiAxOTItODUuOSAxOTItMTkyIDE5MnoiLz48cGF0aCBmaWxsPSIjRkY5ODExIiBkPSJNMjU2IDEyOGMtNzAuNyAwLTEyOCA1Ny4zLTEyOCAxMjhzNTcuMyAxMjggMTI4IDEyOHMxMjgtNTcuMyAxMjgtMTI4LTU3LjMtMTI4LTEyOC0xMjh6Ii8+PC9zdmc+" parent="logstash" vertex="1">
+                    <mxGeometry x="55" y="50" width="50" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="logstash_desc" value="Collects &amp;&#10;transforms logs" style="text;html=1;strokeColor=#B35900;fillColor=#FFE6CC;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontColor=#000000;fontStyle=1" parent="logstash" vertex="1">
+                    <mxGeometry x="20" y="160" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="logstash_ports" value="Port: 9600" style="text;html=1;strokeColor=#B35900;fillColor=#FFE6CC;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1" parent="logstash" vertex="1">
+                    <mxGeometry x="40" y="110" width="80" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="kibana" value="Kibana&#10;(Visualization &amp; Management)" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#9E0059;strokeColor=#9E0059;fontSize=12;fontStyle=1;fontColor=#FFFFFF;gradientColor=#B30066;gradientDirection=north;shadow=1" parent="elk_stack" vertex="1">
+                    <mxGeometry x="380" y="50" width="160" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="kibana_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjRjA0RTk4IiBkPSJNMjU2IDBDMTEzLjkgMCAwIDExMy45IDAgMjU2czExMy45IDI1NiAyNTYgMjU2czI1Ni0xMTMuOSAyNTYtMjU2UzM5OC4xIDAgMjU2IDB6bTAgNDQ4Yy0xMDYuMSAwLTE5Mi04NS45LTE5Mi0xOTJTMTQ5LjkgNjQgMjU2IDY0czE5MiA4NS45IDE5MiAxOTItODUuOSAxOTItMTkyIDE5MnoiLz48cGF0aCBmaWxsPSIjRkY0RDk0IiBkPSJNMjU2IDEyOGMtNzAuNyAwLTEyOCA1Ny4zLTEyOCAxMjhzNTcuMyAxMjggMTI4IDEyOHMxMjgtNTcuMyAxMjgtMTI4LTU3LjMtMTI4LTEyOC0xMjh6Ii8+PC9zdmc+" parent="kibana" vertex="1">
+                    <mxGeometry x="55" y="50" width="50" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="kibana_desc" value="Visualizes &amp;&#10;analyzes data" style="text;html=1;strokeColor=#9E0059;fillColor=#FFE6F0;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontColor=#000000;fontStyle=1" parent="kibana" vertex="1">
+                    <mxGeometry x="20" y="160" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="kibana_ports" value="Port: 5601" style="text;html=1;strokeColor=#9E0059;fillColor=#FFE6F0;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1" parent="kibana" vertex="1">
+                    <mxGeometry x="40" y="110" width="80" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="logstash_to_es" value="2. Indexes processed logs&#10;(structured data)" style="endArrow=classic;html=1;rounded=1;curved=1;strokeWidth=2.5;strokeColor=#B35900;fontSize=11;fontColor=#000000;fontStyle=1;labelBackgroundColor=#FFFFFF;shadow=1" parent="elk_stack" source="logstash" target="elasticsearch" edge="1">
+                    <mxGeometry x="-1" y="35" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="kibana_to_es" value="3. Queries data for&#10;visualization &amp; analysis" style="endArrow=classic;html=1;rounded=1;curved=1;strokeWidth=2.5;strokeColor=#9E0059;fontSize=11;fontColor=#000000;fontStyle=1;labelBackgroundColor=#FFFFFF;shadow=1" parent="elk_stack" source="kibana" target="elasticsearch" edge="1">
+                    <mxGeometry x="-1" y="36" relative="1" as="geometry">
+                        <mxPoint x="10" y="-1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="volumes" value="Persistent Storage" style="swimlane;whiteSpace=wrap;html=1;startSize=40;fillColor=#f5e6f7;strokeColor=#9673a6;fontSize=14;fontStyle=1;fontColor=#000000;gradientColor=#ffffff;gradientDirection=north;shadow=1" parent="network_container" vertex="1">
+                    <mxGeometry x="60" y="380" width="960" height="300" as="geometry"/>
+                </mxCell>
+                <mxCell id="data_volumes" value="Data Lake" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f8f9fa;strokeColor=#666666;fontSize=12;fontStyle=1;fontColor=#000000;gradientColor=#ffffff;gradientDirection=north" parent="volumes" vertex="1">
+                    <mxGeometry x="20" y="50" width="440" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="data_lake_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjNjY2NjY2IiBkPSJNMTkuMzUgMTAuMDRBNy40OSA3LjQ5IDAgMCAwIDEyIDRDOS4xMSA0IDYuNiA1LjY0IDUuMzUgOC4wNEEzLjk5MyAzLjk5MyAwIDAgMCAwIDEyYzAgMi4yMSAxLjc5IDQgNCA0aDEzYzIuMjEgMCA0LTEuNzkgNC00YzAtMi4yMS0xLjc5LTQtNC00eiIvPjwvc3ZnPg==" parent="data_volumes" vertex="1">
+                    <mxGeometry x="20" y="40" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="data_volumes_grid" value="" style="swimlane;startSize=0;strokeColor=#666666;fillColor=none;fontSize=12;fontStyle=0;horizontal=1;verticalAlign=top;align=left;spacing=10" parent="data_volumes" vertex="1">
+                    <mxGeometry x="20" y="90" width="400" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="data_landing" value="Landing" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E6F3FF;strokeColor=#0066CC;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1;gradientColor=#FFFFFF;gradientDirection=north" parent="data_volumes_grid" vertex="1">
+                    <mxGeometry x="20" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="data_bronze" value="Bronze" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#CD853F;strokeColor=#8B4513;fontSize=12;fontColor=#FFFFFF;fontStyle=1;shadow=1;gradientColor=#DEB887;gradientDirection=north" parent="data_volumes_grid" vertex="1">
+                    <mxGeometry x="120" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="data_silver" value="Silver" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#C0C0C0;strokeColor=#666666;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1;gradientColor=#E8E8E8;gradientDirection=north" parent="data_volumes_grid" vertex="1">
+                    <mxGeometry x="220" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="data_gold" value="Gold" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#FFD700;strokeColor=#B8860B;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1;gradientColor=#FFF68F;gradientDirection=north" parent="data_volumes_grid" vertex="1">
+                    <mxGeometry x="320" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="warehouse_volumes" value="Processing &amp; Logs" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f8f9fa;strokeColor=#666666;fontSize=12;fontStyle=1;fontColor=#000000;gradientColor=#ffffff;gradientDirection=north" parent="volumes" vertex="1">
+                    <mxGeometry x="480" y="50" width="460" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="warehouse_icon" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=data:image/svg+xml,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSIjNjY2NjY2IiBkPSJNMTkgOGgtM1Y0SDNjLTEuMSAwLTIgLjktMiAydjExYzAgMS4xLjkgMiAyIDJoMTRjMS4xIDAgMi0uOSAyLTJ2LTNoM2MuNiAwIDEtLjQgMS0xVjljMC0uNi0uNC0xLTEtMXptLTUgMTFIM1Y2aDE0djEzeiIvPjwvc3ZnPg==" parent="warehouse_volumes" vertex="1">
+                    <mxGeometry x="20" y="40" width="40" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="warehouse_volumes_grid" value="" style="swimlane;startSize=0;strokeColor=#666666;fillColor=none;fontSize=12;fontStyle=0;horizontal=1;verticalAlign=top;align=left;spacing=10" parent="warehouse_volumes" vertex="1">
+                    <mxGeometry x="20" y="90" width="420" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="warehouse_temp" value="Temp" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1;gradientColor=#FFFFFF;gradientDirection=north" parent="warehouse_volumes_grid" vertex="1">
+                    <mxGeometry x="20" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="warehouse_checkpoints" value="Checkpoints" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#F3E5F5;strokeColor=#9C27B0;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1;gradientColor=#FFFFFF;gradientDirection=north" parent="warehouse_volumes_grid" vertex="1">
+                    <mxGeometry x="120" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="warehouse_eventlogs" value="Event Logs" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#FFF3E0;strokeColor=#FF9800;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1;gradientColor=#FFFFFF;gradientDirection=north" parent="warehouse_volumes_grid" vertex="1">
+                    <mxGeometry x="220" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="warehouse_logs" value="Logs" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E8F5E9;strokeColor=#4CAF50;fontSize=12;fontColor=#000000;fontStyle=1;shadow=1;gradientColor=#FFFFFF;gradientDirection=north" parent="warehouse_volumes_grid" vertex="1">
+                    <mxGeometry x="320" y="20" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="spark_to_volumes" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=1;curved=1;strokeWidth=2.5;strokeColor=#6c8ebf;dashed=1" parent="network_container" source="spark_iceberg" target="volumes" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="dashboard_to_volumes" value="" style="endArrow=classic;html=1;rounded=1;curved=1;strokeWidth=2.5;strokeColor=#82b366;dashed=1" parent="network_container" source="dashboard" target="volumes" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="logs_to_logstash" value="1. Collects &amp; processes&#10;raw log data" style="endArrow=classic;html=1;rounded=1;curved=1;strokeWidth=2.5;strokeColor=#d6b656;dashed=1;fontSize=11;fontColor=#000000;labelBackgroundColor=#FFFFFF;fontStyle=1;shadow=1" parent="network_container" source="warehouse_volumes" target="logstash" edge="1">
+                    <mxGeometry x="0.1" y="20" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

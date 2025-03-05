@@ -1,0 +1,224 @@
+name: nycbs
+
+services:
+  init-volumes:
+    image: busybox
+    command: >
+      /bin/sh -c "
+        mkdir -p /var/log/nycbs/{jupyter,streamlit,spark,delta}/{error,info} &&
+        chown -R 1000:1000 /var/log/nycbs &&
+        chmod -R 770 /var/log/nycbs &&
+        chown -R 1000:1000 /data/landing /data/bronze /data/silver /data/gold /warehouse &&
+        chmod -R 770 /data/landing /data/bronze /data/silver /data/gold /warehouse
+      "
+    volumes:
+      - data_landing:/data/landing
+      - data_bronze:/data/bronze
+      - data_silver:/data/silver
+      - data_gold:/data/gold
+      - warehouse:/warehouse
+      - jupyter_logs:/var/log/nycbs/jupyter
+      - streamlit_logs:/var/log/nycbs/streamlit
+      - spark_logs:/var/log/nycbs/spark
+      - delta_logs:/var/log/nycbs/delta
+    user: root
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=false
+      - bootstrap.memory_lock=true
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - "cluster.routing.allocation.disk.watermark.low=3gb"
+      - "cluster.routing.allocation.disk.watermark.high=2gb"
+      - "cluster.routing.allocation.disk.watermark.flood_stage=1gb"
+      - "indices.memory.index_buffer_size=30%"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data:rw
+    ports:
+      - "127.0.0.1:9200:9200"
+    networks:
+      - spark-iceberg-network
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"]
+      interval: 30s
+      timeout: 50s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    cap_add:
+      - IPC_LOCK
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    volumes:
+      - ./conf/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - streamlit_logs:/var/log/nycbs/streamlit:ro
+      - spark_logs:/var/log/nycbs/spark:ro
+      - jupyter_logs:/var/log/nycbs/jupyter:ro
+      - delta_logs:/var/log/nycbs/delta:ro
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - spark-iceberg-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9600"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=kibana.local
+    ports:
+      - "127.0.0.1:5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      logstash:
+        condition: service_healthy
+    networks:
+      - spark-iceberg-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    restart: unless-stopped
+
+  spark-iceberg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spark-iceberg
+    depends_on:
+      init-volumes:
+        condition: service_completed_successfully
+      elasticsearch:
+        condition: service_healthy
+      logstash:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8888:8888"  # Jupyter Notebook
+      - "127.0.0.1:4041:4040"  # Spark UI
+      - "127.0.0.1:8501:8501"  # Streamlit
+    volumes:
+      - ./notebooks:/home/aldamiz/notebooks:rw
+      - ./conf:/home/aldamiz/conf:ro
+      - ./src:/home/aldamiz/src:ro
+      # Data lake volumes
+      - data_landing:/home/aldamiz/data/landing:rw
+      - data_bronze:/home/aldamiz/data/bronze:rw
+      - data_silver:/home/aldamiz/data/silver:rw
+      - data_gold:/home/aldamiz/data/gold:rw
+      # Separated log volumes
+      - streamlit_logs:/var/log/nycbs/streamlit:rw
+      - spark_logs:/var/log/nycbs/spark:rw
+      - jupyter_logs:/var/log/nycbs/jupyter:rw
+      - delta_logs:/var/log/nycbs/delta:rw
+      - warehouse:/home/aldamiz/warehouse:rw
+    environment:
+      - JUPYTER_TOKEN=${JUPYTER_TOKEN:-defaulttoken}
+      - PYTHONPATH=/home/aldamiz/src
+      - SPARK_CONF_DIR=/home/aldamiz/conf
+      - DATA_DIR=/home/aldamiz/data
+      - WAREHOUSE_DIR=/home/aldamiz/warehouse
+      - LOG_DIR=/var/log/nycbs
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    restart: unless-stopped
+    healthcheck:
+      test: 
+        - "CMD"
+        - "/bin/sh"
+        - "-c"
+        - "curl -f 'http://localhost:8888/api/status?token=${JUPYTER_TOKEN}' && curl -f 'http://localhost:8501/_stcore/health'"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - spark-iceberg-network
+
+networks:
+  spark-iceberg-network:
+    driver: bridge
+    name: nycbs_network
+
+volumes:
+  # Data lake volumes
+  data_landing:
+    name: nycbs_data_landing
+  data_bronze:
+    name: nycbs_data_bronze
+  data_silver:
+    name: nycbs_data_silver
+  data_gold:
+    name: nycbs_data_gold
+  # Warehouse volume
+  warehouse:
+    name: nycbs_warehouse
+  # Separated log volumes
+  streamlit_logs:
+    name: nycbs_streamlit_logs
+    driver: local
+  spark_logs:
+    name: nycbs_spark_logs
+    driver: local
+  jupyter_logs:
+    name: nycbs_jupyter_logs
+    driver: local
+  delta_logs:
+    name: nycbs_delta_logs
+    driver: local
+  # Elasticsearch data
+  elasticsearch_data:
+    name: nycbs_elasticsearch_data
+  # Configuration volume
+  conf:
+    name: nycbs_conf 
