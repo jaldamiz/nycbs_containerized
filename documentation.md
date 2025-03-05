@@ -11,25 +11,6 @@
 
 ## Architecture Overview
 
-### System Components
-```mermaid
-graph TB
-    subgraph Data Processing
-        A[Apache Spark] --> B[Delta Lake]
-        B --> C[Data Lake]
-    end
-    
-    subgraph Monitoring
-        D[ELK Stack] --> E[Kibana]
-        F[Metrics] --> D
-    end
-    
-    subgraph Development
-        G[Jupyter] --> A
-        H[Streamlit] --> A
-    end
-```
-
 ### Technology Stack Details
 
 #### Core Components

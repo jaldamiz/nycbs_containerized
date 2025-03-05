@@ -159,13 +159,19 @@ class NotebookLogger:
             event_category: Category of the event
             **kwargs: Additional context to include in the log
         """
-        extra = {
+        # Create a copy of kwargs and remove exc_info if present
+        extra = kwargs.copy()
+        if 'exc_info' in extra:
+            del extra['exc_info']
+        
+        # Update with notebook info
+        extra.update({
             'notebook_name': self.notebook_name,
             'event_category': event_category,
-            **self._get_execution_info(),
-            **kwargs
-        }
-        self.logger.log(level, message, extra=extra)
+            **self._get_execution_info()
+        })
+        
+        self.logger.log(level, message, extra=extra, exc_info=kwargs.get('exc_info'))
     
     def info(self, message: str, **kwargs) -> None:
         """Log an info message."""
@@ -173,14 +179,19 @@ class NotebookLogger:
     
     def error(self, message: str, error: Optional[Exception] = None, **kwargs) -> None:
         """Log an error message with optional exception details."""
-        extra = kwargs
+        # Create a copy of kwargs and remove exc_info if present
+        extra = kwargs.copy()
+        if 'exc_info' in extra:
+            del extra['exc_info']
+        
         if error:
             extra.update({
                 'error_type': type(error).__name__,
                 'error_details': str(error),
                 'stack_trace': getattr(error, '__traceback__', None)
             })
-        self.log(logging.ERROR, message, **extra)
+        
+        self.log(logging.ERROR, message, **extra, exc_info=error)
     
     def spark_operation(
         self,
