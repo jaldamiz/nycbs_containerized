@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  spark-iceberg:
+    volumes:
+      - ..:/workspaces/${localWorkspaceFolderBasename}:cached
+      - nycbs-data:/workspaces/${localWorkspaceFolderBasename}/data
+      - nycbs-warehouse:/workspaces/${localWorkspaceFolderBasename}/warehouse
+    command: sleep infinity
+    user: aldamiz
+    environment:
+      - PYTHONPATH=/workspaces/${localWorkspaceFolderBasename}/src
+      - JUPYTER_TOKEN=defaulttoken
+      - DATA_DIR=/workspaces/${localWorkspaceFolderBasename}/data
+      - WAREHOUSE_DIR=/workspaces/${localWorkspaceFolderBasename}/warehouse
+
+volumes:
+  nycbs-data:
+  nycbs-warehouse: 

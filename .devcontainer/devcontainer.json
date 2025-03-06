@@ -1,8 +1,11 @@
 {
-  "name": "NYCBS Spark Iceberg",
-  "dockerComposeFile": "../docker-compose.yml",
+  "name": "NYC Bike Share Analytics",
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.extend.yml"
+  ],
   "service": "spark-iceberg",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   
   // Set *default* container specific settings.json values on container create.
   "settings": {
@@ -38,14 +41,13 @@
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [
     8888,  // Jupyter
-    4040,  // Spark UI
     8501,  // Streamlit
     5601,  // Kibana
     9200   // Elasticsearch
   ],
   
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "pip install -r requirements.txt && pip install -e .",
+  "postCreateCommand": "pip install --no-cache-dir -r requirements.txt",
   
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "aldamiz",
@@ -58,7 +60,13 @@
           "bash": {
             "path": "/bin/bash"
           }
-        }
+        },
+        "python.defaultInterpreterPath": "/opt/conda/bin/python",
+        "python.linting.enabled": true,
+        "python.formatting.provider": "black",
+        "editor.formatOnSave": true,
+        "editor.rulers": [80, 100],
+        "files.trimTrailingWhitespace": true
       }
     }
   },
@@ -70,5 +78,12 @@
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  
+  "remoteEnv": {
+    "PYTHONPATH": "/workspaces/${localWorkspaceFolderBasename}/src",
+    "JUPYTER_TOKEN": "defaulttoken",
+    "DATA_DIR": "/workspaces/${localWorkspaceFolderBasename}/data",
+    "WAREHOUSE_DIR": "/workspaces/${localWorkspaceFolderBasename}/warehouse"
   }
 } 
