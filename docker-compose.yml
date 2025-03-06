@@ -6,29 +6,41 @@ services:
     volumes:
       - streamlit_logs:/var/log/nycbs/streamlit
       - jupyter_logs:/var/log/nycbs/jupyter
+      - spark_logs:/var/log/nycbs/spark
+      - delta_logs:/var/log/nycbs/delta
     command: >
       /bin/sh -c "
-        # Create Streamlit log directories with proper ownership
+        # Create base log directory
+        mkdir -p /var/log/nycbs &&
+        chmod 775 /var/log/nycbs &&
+
+        # Create Streamlit log directories
         mkdir -p /var/log/nycbs/streamlit/error &&
         mkdir -p /var/log/nycbs/streamlit/info &&
         touch /var/log/nycbs/streamlit/error/.keep &&
         touch /var/log/nycbs/streamlit/info/.keep &&
         touch /var/log/nycbs/streamlit/error/streamlit.log &&
         touch /var/log/nycbs/streamlit/info/streamlit.log &&
-        chown -R 1000:1000 /var/log/nycbs &&
-        chown -R 1000:1000 /var/log/nycbs/streamlit &&
-        chmod -R 770 /var/log/nycbs/streamlit &&
-        chmod 660 /var/log/nycbs/streamlit/error/streamlit.log &&
-        chmod 660 /var/log/nycbs/streamlit/info/streamlit.log &&
         
         # Create Jupyter log directories
         mkdir -p /var/log/nycbs/jupyter/error &&
         touch /var/log/nycbs/jupyter/jupyter.log &&
         touch /var/log/nycbs/jupyter/error/error.log &&
-        chown -R 1000:1000 /var/log/nycbs/jupyter &&
-        chmod -R 770 /var/log/nycbs/jupyter &&
-        chmod 660 /var/log/nycbs/jupyter/jupyter.log &&
-        chmod 660 /var/log/nycbs/jupyter/error/error.log
+        
+        # Create Spark log directories
+        mkdir -p /var/log/nycbs/spark/error &&
+        touch /var/log/nycbs/spark/spark.log &&
+        touch /var/log/nycbs/spark/error/error.log &&
+        
+        # Create Delta log directories
+        mkdir -p /var/log/nycbs/delta/error &&
+        touch /var/log/nycbs/delta/delta.log &&
+        touch /var/log/nycbs/delta/error/error.log &&
+        
+        # Set permissions for all log directories
+        chown -R 1000:1000 /var/log/nycbs &&
+        chmod -R 775 /var/log/nycbs &&
+        find /var/log/nycbs -type f -exec chmod 664 {} \\;
       "
     user: root
 
@@ -78,13 +90,14 @@ services:
     container_name: logstash
     volumes:
       - ./conf/logstash/pipeline:/usr/share/logstash/pipeline:ro
-      - streamlit_logs:/var/log/nycbs/streamlit:ro
-      - spark_logs:/var/log/nycbs/spark:ro
-      - jupyter_logs:/var/log/nycbs/jupyter:ro
-      - delta_logs:/var/log/nycbs/delta:ro
+      - streamlit_logs:/var/log/nycbs/streamlit:rw
+      - spark_logs:/var/log/nycbs/spark:rw
+      - jupyter_logs:/var/log/nycbs/jupyter:rw
+      - delta_logs:/var/log/nycbs/delta:rw
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
+    user: "1000:1000"
     ports:
       - "127.0.0.1:5000:5000"
       - "127.0.0.1:9600:9600"
@@ -99,11 +112,11 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
     deploy:
       resources:
         limits:
           memory: 1G
-    restart: unless-stopped
 
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.0
