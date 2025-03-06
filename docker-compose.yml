@@ -152,7 +152,7 @@ services:
     container_name: spark-iceberg
     volumes:
       - .:/workspace:cached
-      - ./notebooks:/home/aldamiz/notebooks:rw
+      - ./src/notebooks:/home/aldamiz/notebooks:rw
       - ./conf:/home/aldamiz/conf:ro
       - ./src:/home/aldamiz/src:ro
       - streamlit_logs:/var/log/nycbs/streamlit:rw
