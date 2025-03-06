@@ -2,7 +2,7 @@
   "name": "NYCBS Spark Iceberg",
   "dockerComposeFile": "../docker-compose.yml",
   "service": "spark-iceberg",
-  "workspaceFolder": "/home/aldamiz",
+  "workspaceFolder": "/workspace",
   
   // Set *default* container specific settings.json values on container create.
   "settings": {
@@ -11,7 +11,16 @@
     "python.linting.pylintEnabled": true,
     "python.formatting.provider": "black",
     "editor.formatOnSave": true,
-    "terminal.integrated.defaultProfile.linux": "bash"
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "python.analysis.extraPaths": [
+      "/workspace/src"
+    ],
+    "jupyter.notebookFileRoot": "/workspace",
+    "files.watcherExclude": {
+      "**/target": true,
+      "**/logs": true,
+      "**/data": true
+    }
   },
   
   // Add the IDs of extensions you want installed when the container is created.
@@ -19,15 +28,47 @@
     "ms-python.python",
     "ms-python.vscode-pylance",
     "ms-toolsai.jupyter",
-    "ms-azuretools.vscode-docker"
+    "ms-azuretools.vscode-docker",
+    "redhat.vscode-yaml",
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    "streetsidesoftware.code-spell-checker"
   ],
   
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  "forwardPorts": [8888, 4040],
+  "forwardPorts": [
+    8888,  // Jupyter
+    4040,  // Spark UI
+    8501,  // Streamlit
+    5601,  // Kibana
+    9200   // Elasticsearch
+  ],
   
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "echo 'Dev container is ready!'",
+  "postCreateCommand": "pip install -r requirements.txt && pip install -e .",
   
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-  "remoteUser": "aldamiz"
+  "remoteUser": "aldamiz",
+  
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash"
+          }
+        }
+      }
+    }
+  },
+  
+  // Uncomment to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+  // "remoteUser": "root"
+  
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  }
 } 

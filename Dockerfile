@@ -53,7 +53,8 @@ RUN mkdir -p /home/aldamiz/conf \
              /home/aldamiz/warehouse/{temp,checkpoints,eventlogs,logs} \
              /home/aldamiz/.local/share/jupyter/runtime \
              /var/run/supervisor \
-             /var/log/supervisor
+             /var/log/supervisor \
+             /workspace
 
 # Create log files with proper permissions
 RUN touch /home/aldamiz/warehouse/logs/{nycbs,spark,etl,data,analysis,jupyter,streamlit,supervisord}.log && \
@@ -81,7 +82,8 @@ RUN chown -R aldamiz:aldamiz /home/aldamiz && \
     chown -R aldamiz:aldamiz /var/run/supervisor && \
     chmod -R 770 /var/run/supervisor && \
     chown -R aldamiz:aldamiz /var/log/supervisor && \
-    chmod -R 770 /var/log/supervisor
+    chmod -R 770 /var/log/supervisor && \
+    chown -R aldamiz:aldamiz /workspace
 
 # Copy configurations and utilities
 COPY --chown=aldamiz:aldamiz conf/spark-defaults.conf /home/aldamiz/conf/
