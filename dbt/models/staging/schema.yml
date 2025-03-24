@@ -1,0 +1,13 @@
+models:
+  - name: bike_type
+    description: type of the bike (electrical or manual)
+  - name: member
+    description: is a citibike memeber or a casual rider
+  - name: dates
+    description: a calendar table with all dates and date information
+  - name: start_station
+    description: station information including name, long and latitute coordinates from the origin station
+  - name: end_station
+    description: station information including name, long and latitute coordinates from the end station
+  - name: tripdata
+    description: contains all information from the citibike rides, is it montly updated
