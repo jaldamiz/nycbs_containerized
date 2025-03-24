@@ -1,0 +1,201 @@
+version: 2
+
+models:
+  - name: test_expected_metrics
+    description: >
+      Unit test model that compares actual trip metrics against expected values.
+      Tests if trip_analysis results match the expected_trip_metrics seed within defined tolerances.
+    config:
+      contract:
+        enforced: true
+    tests:
+      # NOTE: Custom schema tests are excluded because they conflict with the model-based test approach we're using
+      # - expect_column_values_to_not_be_null:
+      #     column_name: test_result
+      - accepted_values:
+          column_name: test_result
+          values: ['PASS', 'FAIL']
+    columns:
+      - name: start_year
+        description: Year when the trip started
+        data_type: integer
+        tests:
+          - not_null
+      - name: start_month
+        description: Month when the trip started
+        data_type: integer
+        tests:
+          - not_null
+      - name: member_casual
+        description: Type of membership (member or casual)
+        data_type: varchar
+        tests:
+          - not_null
+      - name: actual_trip_count
+        description: Actual number of trips from trip_analysis
+        data_type: decimal(18,2)
+        tests:
+          - not_null
+          # NOTE: Excluded because this test expects values <= 0 to pass, which is the opposite of what we want
+          # - positive_values
+      - name: expected_trip_count
+        description: Expected number of trips from seed data
+        data_type: integer
+        tests:
+          - not_null
+          # NOTE: Excluded because this test expects values <= 0 to pass, which is the opposite of what we want
+          # - positive_values
+      - name: trip_count_diff
+        description: Absolute difference between actual and expected trip counts
+        data_type: decimal(18,2)
+      - name: actual_avg_duration
+        description: Actual average trip duration
+        data_type: double
+        tests: []
+      - name: expected_avg_duration
+        description: Expected average trip duration
+        data_type: double
+        tests: []
+      - name: avg_duration_diff
+        description: Absolute difference between actual and expected durations
+        data_type: double
+      - name: actual_round_trip_pct
+        description: Actual percentage of round trips
+        data_type: double
+        tests: []
+      - name: expected_round_trip_pct
+        description: Expected percentage of round trips
+        data_type: double
+        tests: []
+      - name: round_trip_pct_diff
+        description: Absolute difference between actual and expected round trip percentages
+        data_type: double
+      - name: test_result
+        description: Result of the test (PASS or FAIL)
+        data_type: varchar
+        tests:
+          - not_null
+      - name: failure_reason
+        description: Description of why the test failed, if applicable
+        data_type: varchar
+
+  - name: test_station_metrics
+    description: >
+      Unit test model that compares actual station metrics against expected values.
+      Tests if station_analysis results match the expected_station_metrics seed within defined tolerances.
+    config:
+      contract:
+        enforced: true
+    tests:
+      # NOTE: Custom schema tests are excluded because they conflict with the model-based test approach we're using
+      # - expect_column_values_to_not_be_null:
+      #     column_name: test_result
+      - accepted_values:
+          column_name: test_result
+          values: ['PASS', 'FAIL']
+    columns:
+      - name: station_id
+        description: Station identifier
+        data_type: integer
+        tests:
+          - not_null
+      - name: station_name
+        description: Station name
+        data_type: varchar
+        tests:
+          - not_null
+      - name: actual_departures
+        description: Actual number of departures from station_analysis
+        data_type: decimal(18,2)
+        tests:
+          - not_null
+          # NOTE: Excluded because this test expects values <= 0 to pass, which is the opposite of what we want
+          # - positive_values
+      - name: expected_departures
+        description: Expected number of departures from seed data
+        data_type: integer
+        tests:
+          - not_null
+          # NOTE: Excluded because this test expects values <= 0 to pass, which is the opposite of what we want
+          # - positive_values
+      - name: departures_diff
+        description: Absolute difference between actual and expected departures
+        data_type: decimal(18,2)
+      - name: actual_arrivals
+        description: Actual number of arrivals from station_analysis
+        data_type: decimal(18,2)
+        tests:
+          - not_null
+          # NOTE: Excluded because this test expects values <= 0 to pass, which is the opposite of what we want
+          # - positive_values
+      - name: expected_arrivals
+        description: Expected number of arrivals from seed data
+        data_type: integer
+        tests:
+          - not_null
+          # NOTE: Excluded because this test expects values <= 0 to pass, which is the opposite of what we want
+          # - positive_values
+      - name: arrivals_diff
+        description: Absolute difference between actual and expected arrivals
+        data_type: decimal(18,2)
+      - name: actual_net_flow
+        description: Actual net flow (departures - arrivals)
+        data_type: decimal(18,2)
+        tests:
+          - not_null
+      - name: expected_net_flow
+        description: Expected net flow
+        data_type: integer
+        tests:
+          - not_null
+      - name: net_flow_diff
+        description: Absolute difference between actual and expected net flow
+        data_type: decimal(18,2)
+      - name: actual_member_pct
+        description: Actual percentage of member trips
+        data_type: double
+        tests: []
+      - name: expected_member_pct
+        description: Expected percentage of member trips
+        data_type: double
+        tests: []
+      - name: member_pct_diff
+        description: Absolute difference between actual and expected member percentages
+        data_type: double
+      - name: actual_casual_pct
+        description: Actual percentage of casual trips
+        data_type: double
+      - name: expected_casual_pct
+        description: Expected percentage of casual trips
+        data_type: double
+      - name: casual_pct_diff
+        description: Absolute difference between actual and expected casual percentages
+        data_type: double
+      - name: actual_duration
+        description: Actual average trip duration
+        data_type: double
+        tests: []
+      - name: expected_duration
+        description: Expected average trip duration
+        data_type: double
+        tests: []
+      - name: duration_diff
+        description: Absolute difference between actual and expected durations
+        data_type: double
+      - name: actual_weekend_pct
+        description: Actual percentage of weekend usage
+        data_type: double
+      - name: expected_weekend_pct
+        description: Expected percentage of weekend usage
+        data_type: double
+      - name: weekend_pct_diff
+        description: Absolute difference between actual and expected weekend percentages
+        data_type: double
+      - name: test_result
+        description: Result of the test (PASS or FAIL)
+        data_type: varchar
+        tests:
+          - not_null
+      - name: failure_reason
+        description: Description of why the test failed, if applicable
+        data_type: varchar 

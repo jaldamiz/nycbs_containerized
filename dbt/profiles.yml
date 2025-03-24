@@ -1,0 +1,36 @@
+nycbs:
+  outputs:
+    dev:
+      type: duckdb
+      path: dev.duckdb
+      extensions:
+        - delta
+      threads: 1
+      database: dev
+      schema: raw
+      use_direct_external_access: true
+      external_access: true
+
+    prod:
+      type: duckdb
+      path: prod.duckdb
+      extensions:
+        - delta
+      threads: 4
+      database: prod
+      schema: raw
+      use_direct_external_access: true
+      external_access: true
+
+    test:
+      type: duckdb
+      path: test.duckdb
+      extensions:
+        - delta
+      threads: 1
+      database: test
+      schema: raw
+      use_direct_external_access: true
+      external_access: true
+
+  target: test

@@ -1,0 +1,15 @@
+version: 2
+
+# Properties now defined directly in model SQL files
+# models:
+#   - name: trip_analysis
+#     meta:
+#       owner: Juan Aldamiz
+
+#   - name: station_analysis
+#     meta:
+#       owner: Juan Aldamiz
+
+#   - name: temporal_analysis
+#     meta:
+#       owner: Juan Aldamiz 

@@ -1,30 +1,35 @@
-with 
+{{
+  config(
+    materialized = 'table'
+  )
+}}
 
-source as (
+-- Refined staging model for trip data
+-- Note: In our source data, there's an issue with the column mappings:
+-- The "rideable_type" column actually contains member/casual designation
+-- The tripdata_ext.sql model has been corrected to properly map these fields
 
-    select * from {{ source('raw', 'tripdata') }}
-
+with source as (
+    select * from {{ ref('tripdata_ext') }}
 ),
 
 renamed as (
-
     select
-        ride_id,
-        rideable_type,
-        started_at,
-        ended_at,
-        start_station_name,
-        start_station_id,
-        end_station_name,
-        end_station_id,
-        start_lat,
-        start_lng,
-        end_lat,
-        end_lng,
-        member_casual,
-        'NYC' as city
+        source.ride_id,
+        source.rideable_type,  -- Note: This contains member/casual data in source, but we keep the original field name for consistency
+        source.started_at,
+        source.ended_at,
+        source.start_station_name,
+        source.start_station_id,
+        source.end_station_name,
+        source.end_station_id,
+        source.start_lat,
+        source.start_lng,
+        source.end_lat,
+        source.end_lng,
+        source.member_casual,  -- This is now correctly mapped in tripdata_ext
+        source.city            -- This is now correctly derived from the folder structure
     from source
-
 )
 
 select * from renamed

@@ -1,48 +1,68 @@
-with 
+{{
+    config(
+        materialized="table",
+        version = 1,
+        latest_version = true
+    )
+}}
 
-source as (
-
+with date_spine as (
     select * from {{ ref('date') }}
-
 ),
 
-renamed as (
-
+final as (
     select
-        {{ dbt_utils.generate_surrogate_key(['DATE_KEY']) }} as date_id,
-        DATE_KEY,
-        DAY_OF_YEAR,
-        DAY_SUFFIX,
-        WEEK_KEY,
-        WEEK_OF_YEAR,
-        DAY_OF_WEEK,
-        WEEK_DAY_SHORT_DESC,
-        WEEK_DAY_DESC,
-        FIRST_DAY_OF_WEEK,
-        LAST_DAY_OF_WEEK,
-        MONTH_KEY,
-        MONTH_OF_YEAR,
-        DAY_OF_MONTH,
-        MONTH_SHORT_DESC,
-        MONTH_DESC,
-        FIRST_DAY_OF_MONTH,
-        LAST_DAY_OF_MONTH,
-        QUARTER_KEY,
-        QUARTER_OF_YEAR,
-        DAY_OF_QUARTER,
-        QUARTER_SHORT_DESC,
-        QUARTER_DESC,
-        FIRST_DAY_OF_QUARTER,
-        LAST_DAY_OF_QUARTER,
-        YEAR_KEY,
-        FIRST_DAY_OF_YEAR,
-        LAST_DAY_OF_YEAR,
-        ORDINAL_WEEKDAY_OF_MONTH,
-        HOLIDAY_DESC,
-        IS_HOLIDAY BOOLEAN
-
-    from source
-
+        DATE_KEY as date_key,
+        DATE_KEY as date_day,
+        
+        -- Standard date parts
+        extract('year' from DATE_KEY) as year,
+        extract('month' from DATE_KEY) as month_number,
+        extract('day' from DATE_KEY) as day_of_month,
+        
+        -- Month name
+        MONTH_DESC as month_name,
+        MONTH_SHORT_DESC as month_short_name,
+        
+        -- Day of week
+        DAY_OF_WEEK as day_of_week,
+        WEEK_DAY_DESC as day_name,
+        WEEK_DAY_SHORT_DESC as day_short_name,
+        
+        -- Week information
+        WEEK_OF_YEAR as week_number,
+        FIRST_DAY_OF_WEEK as week_start_date,
+        LAST_DAY_OF_WEEK as week_end_date,
+        
+        -- Quarter information
+        QUARTER_OF_YEAR as quarter_number,
+        QUARTER_SHORT_DESC as quarter_name,
+        
+        -- Season (Northern hemisphere)
+        case
+            when extract('month' from DATE_KEY) in (12, 1, 2) then 'Winter'
+            when extract('month' from DATE_KEY) in (3, 4, 5) then 'Spring'
+            when extract('month' from DATE_KEY) in (6, 7, 8) then 'Summer'
+            when extract('month' from DATE_KEY) in (9, 10, 11) then 'Fall'
+        end as season,
+        
+        -- Holiday flags
+        IS_HOLIDAY as is_holiday,
+        
+        -- Weekend flag
+        case when extract('dow' from DATE_KEY) in (0, 6) then true else false end as is_weekend,
+        
+        -- Time period flags
+        case when extract('month' from DATE_KEY) in (5, 6, 7, 8, 9) then true else false end as is_peak_season,
+        
+        case when extract('month' from DATE_KEY) between 4 and 10 then true else false end as is_cycling_season,
+        
+        -- Fiscal periods (example - fiscal year starting in October)
+        case 
+            when extract('month' from DATE_KEY) >= 10 then extract('year' from DATE_KEY) + 1
+            else extract('year' from DATE_KEY)
+        end as fiscal_year
+    from date_spine
 )
 
-select * from renamed
+select * from final

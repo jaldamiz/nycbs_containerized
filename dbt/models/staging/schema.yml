@@ -1,13 +1,498 @@
+version: 2
+
 models:
-  - name: bike_type
-    description: type of the bike (electrical or manual)
-  - name: member
-    description: is a citibike memeber or a casual rider
-  - name: dates
-    description: a calendar table with all dates and date information
-  - name: start_station
-    description: station information including name, long and latitute coordinates from the origin station
-  - name: end_station
-    description: station information including name, long and latitute coordinates from the end station
+  - name: tripdata_ext
+    description: >
+      External table sourced directly from Delta Lake parquet files with renamed columns.
+      Contains raw trip data from NYC Citibike system.
+      NOTE: In this dataset, the rideable_type column actually contains member vs casual designation,
+      which is duplicated in member_casual for consistency with standard schema.
+    tests:
+      - expect_column_sum_to_be_between:
+          column_name: "1"
+          min_sum: 1
+          max_sum: 10000000
+    columns:
+      - name: ride_id
+        description: Unique identifier for each ride
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9]{10,}$'
+      - name: rideable_type
+        description: Contains membership type values (member or casual) - kept as rideable_type for source schema consistency
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['member', 'casual']
+      - name: started_at
+        description: Timestamp when the ride started
+        tests:
+          - not_null
+          - timestamp_range:
+              min_date: '2020-01-01'
+              max_date: '{{ current_timestamp() }}'
+      - name: ended_at
+        description: Timestamp when the ride ended
+        tests:
+          - not_null
+          - timestamp_range:
+              min_date: '2020-01-01'
+              max_date: '{{ current_timestamp() }}'
+      - name: start_station_name
+        description: Name of the station where the ride started
+      - name: start_station_id
+        description: ID of the station where the ride started
+        tests:
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9.]+$'
+      - name: end_station_name
+        description: Name of the station where the ride ended
+      - name: end_station_id
+        description: ID of the station where the ride ended
+        tests:
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9.]+$'
+      - name: start_lat
+        description: Latitude coordinate of the starting point
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: start_lng
+        description: Longitude coordinate of the starting point
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+      - name: end_lat
+        description: Latitude coordinate of the ending point
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: end_lng
+        description: Longitude coordinate of the ending point
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+      - name: member_casual
+        description: User type (member or casual rider) - duplicated from rideable_type column for consistency
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['member', 'casual']
+          - expect_column_pair_values_to_be_equal:
+              column_a: member_casual
+              column_b: rideable_type
+      - name: city
+        description: City identifier, derived from folder structure ('nyc' for New York City data)
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['nyc']
+      - name: year
+        description: Year of the ride data
+        tests:
+          - not_null
+          - value_between:
+              min_value: 2020
+              max_value: "{{ (modules.datetime.datetime.now().year) }}"
+      - name: month
+        description: Month of the ride data
+        tests:
+          - not_null
+          - value_between:
+              min_value: 1
+              max_value: 12
+
   - name: tripdata
-    description: contains all information from the citibike rides, is it montly updated
+    description: >
+      Refined trip data with cleaned column names and structure.
+      Used as the primary source for analytical models.
+      IMPORTANT: In this dataset, the rideable_type column contains membership status (member/casual),
+      not actual bike types. The actual bike types are assigned in the dimensional model.
+    tests:
+      - model_row_count_equality:
+          model_reference: tripdata_ext
+      - valid_geo_coordinates:
+          lat_column: start_lat
+          lng_column: start_lng
+      - valid_geo_coordinates:
+          lat_column: end_lat
+          lng_column: end_lng
+    columns:
+      - name: ride_id
+        description: Unique identifier for each ride
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9]{10,}$'
+      - name: rideable_type
+        description: Contains membership type values (member or casual) - kept as rideable_type for source schema consistency
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['member', 'casual']
+      - name: started_at
+        description: Timestamp when the ride started
+        tests:
+          - not_null
+          - timestamp_range:
+              min_date: '2020-01-01'
+              max_date: '{{ current_timestamp() }}'
+      - name: ended_at
+        description: Timestamp when the ride ended
+        tests:
+          - not_null
+          - timestamp_range:
+              min_date: '2020-01-01'
+              max_date: '{{ current_timestamp() }}'
+          - column_pair_greater_than:
+              column_a: ended_at
+              column_b: started_at
+      - name: start_station_name
+        description: Name of the station where the ride started
+      - name: start_station_id
+        description: ID of the station where the ride started
+        tests:
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9.]+$'
+      - name: end_station_name
+        description: Name of the station where the ride ended
+      - name: end_station_id
+        description: ID of the station where the ride ended
+        tests:
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9.]+$'
+      - name: start_lat
+        description: Latitude coordinate of the starting point
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: start_lng
+        description: Longitude coordinate of the starting point
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+      - name: end_lat
+        description: Latitude coordinate of the ending point
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: end_lng
+        description: Longitude coordinate of the ending point
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+      - name: member_casual
+        description: User type (member or casual rider) - duplicated from rideable_type column for consistency
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['member', 'casual']
+          - expect_column_pair_values_to_be_equal:
+              column_a: member_casual
+              column_b: rideable_type
+      - name: city
+        description: City identifier, set to 'nyc' for New York City data
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['nyc']
+
+  - name: bike_type
+    description: >
+      Dimension reference table containing standard bike types.
+      Since the source data doesn't contain actual bike type information, 
+      this table provides standard bike types used in the dimensional model.
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: rideable_type
+      - expect_column_values_to_not_be_null:
+          column_name: rideable_type
+    columns:
+      - name: rideable_type
+        description: Standard bike type (electric_bike, classic_bike, docked_bike)
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              values: ['electric_bike', 'classic_bike', 'docked_bike']
+
+  - name: member
+    description: >
+      Dimension table containing distinct rider types
+      (member for subscribers or casual for one-time users).
+      Extracted from the rideable_type field in source data.
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: member_casual
+      - expect_column_values_to_not_be_null:
+          column_name: member_casual
+    columns:
+      - name: member_casual
+        description: Type of user (member or casual)
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              values: ['member', 'casual']
+
+  - name: date
+    description: >
+      Calendar dimension table with date attributes and holiday information.
+      Provides date-related attributes for time-based analysis.
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: DATE_KEY
+      - expect_column_values_to_not_be_null:
+          column_name: DATE_KEY
+      - expect_column_values_to_be_increasing:
+          column_name: DATE_KEY
+    columns:
+      - name: DATE_KEY
+        description: Date in YYYY-MM-DD format, serves as primary key
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^\d{4}-\d{2}-\d{2}$'
+      - name: DAY_OF_YEAR
+        description: Day number within the year (1-366)
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 366
+      - name: DAY_SUFFIX
+        description: Suffix for the day (st, nd, rd, th)
+        tests:
+          - accepted_values:
+              values: ['st', 'nd', 'rd', 'th']
+      - name: WEEK_KEY
+        description: Year and week number (YYYYWW)
+        tests:
+          - expect_column_values_to_match_regex:
+              regex: '^\d{6}$'
+      - name: WEEK_OF_YEAR
+        description: Week number within the year (1-53)
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 53
+      - name: DAY_OF_WEEK
+        description: Day number within the week (1-7)
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 7
+      - name: WEEK_DAY_SHORT_DESC
+        description: Short name of the day (Mon, Tue, etc.)
+        tests:
+          - accepted_values:
+              values: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      - name: WEEK_DAY_DESC
+        description: Full name of the day (Monday, Tuesday, etc.)
+        tests:
+          - accepted_values:
+              values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+      - name: FIRST_DAY_OF_WEEK
+        description: First day of the current week
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: LAST_DAY_OF_WEEK
+        description: Last day of the current week
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: MONTH_KEY
+        description: Year and month number (YYYYMM)
+        tests:
+          - expect_column_values_to_match_regex:
+              regex: '^\d{6}$'
+      - name: MONTH_OF_YEAR
+        description: Month number (1-12)
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 12
+      - name: DAY_OF_MONTH
+        description: Day number within the month (1-31)
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 31
+      - name: MONTH_SHORT_DESC
+        description: Short name of the month (Jan, Feb, etc.)
+        tests:
+          - accepted_values:
+              values: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      - name: MONTH_DESC
+        description: Full name of the month (January, February, etc.)
+        tests:
+          - accepted_values:
+              values: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      - name: FIRST_DAY_OF_MONTH
+        description: First day of the current month
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: LAST_DAY_OF_MONTH
+        description: Last day of the current month
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: QUARTER_KEY
+        description: Year and quarter number (YYYYQ)
+        tests:
+          - expect_column_values_to_match_regex:
+              regex: '^\d{5}$'
+      - name: QUARTER_OF_YEAR
+        description: Quarter number (1-4)
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 4
+      - name: DAY_OF_QUARTER
+        description: Day number within the quarter
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 92
+      - name: QUARTER_SHORT_DESC
+        description: Short name of the quarter (Q1, Q2, etc.)
+        tests:
+          - accepted_values:
+              values: ['Q1', 'Q2', 'Q3', 'Q4']
+      - name: QUARTER_DESC
+        description: Full name of the quarter (Quarter 1, Quarter 2, etc.)
+        tests:
+          - accepted_values:
+              values: ['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4']
+      - name: FIRST_DAY_OF_QUARTER
+        description: First day of the current quarter
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: LAST_DAY_OF_QUARTER
+        description: Last day of the current quarter
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: YEAR_KEY
+        description: Year value
+        tests:
+          - value_between:
+              min_value: 2020
+              max_value: "{{ (modules.datetime.datetime.now().year + 1) }}"
+      - name: FIRST_DAY_OF_YEAR
+        description: First day of the current year
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: LAST_DAY_OF_YEAR
+        description: Last day of the current year
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: ORDINAL_WEEKDAY_OF_MONTH
+        description: The nth occurrence of this weekday in the month (e.g., 3rd Tuesday)
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 5
+      - name: HOLIDAY_DESC
+        description: Description of the holiday, if applicable
+      - name: IS_HOLIDAY
+        description: Boolean flag indicating if the date is a holiday
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+
+  - name: start_station
+    description: >
+      Dimension table with starting station attributes including
+      location coordinates and station identifiers.
+    tests:
+      - valid_geo_coordinates:
+          lat_column: start_lat
+          lng_column: start_lng
+    columns:
+      - name: start_station_name
+        description: Name of the station where rides originated
+        tests:
+          - expect_column_values_to_not_be_null:
+              column_name: start_station_name
+      - name: start_station_id
+        description: Unique identifier for the starting station
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9.]+$'
+      - name: start_lat
+        description: Latitude coordinate of the station
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: start_lng
+        description: Longitude coordinate of the station
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+
+  - name: end_station
+    description: >
+      Dimension table with ending station attributes including
+      location coordinates and station identifiers.
+    tests:
+      - valid_geo_coordinates:
+          lat_column: end_lat
+          lng_column: end_lng
+    columns:
+      - name: end_station_name
+        description: Name of the station where rides terminated
+        tests:
+          - expect_column_values_to_not_be_null:
+              column_name: end_station_name
+      - name: end_station_id
+        description: Unique identifier for the ending station
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9.]+$'
+      - name: end_lat
+        description: Latitude coordinate of the station
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: end_lng
+        description: Longitude coordinate of the station
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+
+  - name: inspect_ext
+    description: >
+      Utility model for exploring and examining the external data structure.
+      This model is disabled since the original column IDs don't match the 
+      current data source structure.
+
+  - name: debug_schema
+    description: Utility model for debugging and validating the schema structure.
+
+  - name: print_columns
+    description: Utility model for displaying column metadata from tables.

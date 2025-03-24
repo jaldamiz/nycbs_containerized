@@ -1,0 +1,15 @@
+version: 2
+
+# Properties now defined directly in model SQL files
+# models:
+#   - name: trip_analysis
+#     meta:
+#       version: 1.0.0
+
+#   - name: station_analysis
+#     meta:
+#       version: 1.0.0
+
+#   - name: temporal_analysis
+#     meta:
+#       version: 1.0.0 

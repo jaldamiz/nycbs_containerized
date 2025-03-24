@@ -1,0 +1,11 @@
+
+    
+    
+    truncate table "test"."raw"."expected_station_metrics";
+    -- dbt seed --
+    
+          COPY "test"."raw"."expected_station_metrics" FROM '/Users/aldam/git/nycbs_containerized/dbt/seeds/expected_station_metrics.csv' (FORMAT CSV, HEADER TRUE, DELIMITER ',')
+        
+
+;
+  

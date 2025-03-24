@@ -2,17 +2,17 @@ with
 
 source as (
 
-    select * from {{ source('raw', 'tripdata') }}
+    select * from {{ ref('tripdata_ext') }}
 
 ),
 
 renamed as (
 
     select
-        start_station_name,
-        start_station_id,
-        start_lat,
-        start_lng
+        source.start_station_name,
+        source.start_station_id,
+        source.start_lat,
+        source.start_lng
 
     from source
 

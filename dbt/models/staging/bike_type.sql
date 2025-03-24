@@ -1,18 +1,26 @@
-with 
+{{
+  config(
+    materialized = 'table'
+  )
+}}
 
-source as (
+-- Since our data doesn't contain actual bike types (the rideable_type field
+-- actually contains member/casual information), we'll create some placeholder
+-- bike types for our dimensional model
 
-    select * from {{ source('raw', 'tripdata') }}
-
-),
-
-renamed as (
-
-    select distinct
-        rideable_type,
-
-    from source
-
+with bike_types as (
+    select 
+        'electric_bike' as rideable_type
+    
+    union all
+    
+    select 
+        'classic_bike' as rideable_type
+        
+    union all
+    
+    select 
+        'docked_bike' as rideable_type
 )
 
-select * from renamed
+select * from bike_types

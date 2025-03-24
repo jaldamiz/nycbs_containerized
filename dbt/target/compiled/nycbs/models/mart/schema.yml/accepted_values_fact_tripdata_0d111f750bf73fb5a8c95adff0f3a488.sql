@@ -1,0 +1,22 @@
+
+    
+    
+
+with all_values as (
+
+    select
+        pricing_tier as value_field,
+        count(*) as n_records
+
+    from "test"."raw_mart"."fact_tripdata"
+    group by pricing_tier
+
+)
+
+select *
+from all_values
+where value_field not in (
+    'standard','extended','premium'
+)
+
+

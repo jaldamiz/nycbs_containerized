@@ -2,7 +2,11 @@ version: 2
 
 sources:
   - name: raw
-    database: nycbs  
-    schema: landing  
+    schema: raw
     tables:
       - name: tripdata
+        description: "Raw trip data from NYC bike sharing system"
+        external:
+          location: "{{ env_var('PWD') }}/data/bronze/rides_nyc/*"
+          options:
+            format: "delta"

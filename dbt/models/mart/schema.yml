@@ -1,0 +1,784 @@
+version: 2
+
+# Project Information
+# ------------------
+# Project Name: NYC Bike Sharing System Analytics
+# Version: 1.0.0
+# Last Updated: 2023-06-15
+# Author: NYC Bike Analytics Team
+# Contact: data@nycbike.example.com
+
+models:
+  - name: fact_tripdata
+    description: >
+      Fact table containing bike trip data with associated dimensional keys and metrics.
+      Follows Kimball modeling pattern with surrogate keys for dimensions and business metrics.
+      NOTE: Since the source data does not include actual bike types, bike types are assigned
+      algorithmically based on a hash of the ride_id.
+    config:
+      materialized: table
+      contract:
+        enforced: true
+      tags: ["Fact Models"]
+    tests:
+      - referential_integrity:
+          column_name: ride_id
+          to: ref('tripdata')
+          field: ride_id
+      - expect_column_values_to_not_be_null:
+          column_name: trip_id
+      - expect_column_sum_to_be_between:
+          column_name: trip_duration_minutes
+          min_sum: 1
+          max_sum: 100000000
+    columns:
+      - name: trip_id
+        description: Surrogate key for the trip fact
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+      - name: ride_id
+        description: Natural key from the source system
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9]{10,}$'
+      - name: rideable_type_id
+        description: Foreign key to the bike dimension (assigned algorithmically)
+        data_type: varchar
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_bike')
+              field: rideable_type_id
+      - name: start_station_id
+        description: Foreign key to the station dimension for the starting station
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('dim_station')
+              field: station_id
+      - name: end_station_id
+        description: Foreign key to the station dimension for the ending station
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('dim_station')
+              field: station_id
+      - name: member_id
+        description: Foreign key to the member dimension
+        data_type: varchar
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_member')
+              field: member_id
+      - name: start_date_id
+        description: Foreign key to the start date dimension
+        data_type: date
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_start_date')
+              field: date_key
+      - name: end_date_id
+        description: Foreign key to the end date dimension
+        data_type: date
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_end_date')
+              field: date_key
+      - name: start_lat
+        description: Latitude coordinate of the starting point
+        data_type: double
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: start_lng
+        description: Longitude coordinate of the starting point
+        data_type: double
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+      - name: end_lat
+        description: Latitude coordinate of the ending point
+        data_type: double
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: end_lng
+        description: Longitude coordinate of the ending point
+        data_type: double
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+      - name: trip_duration_minutes
+        description: Duration of the trip in minutes
+        data_type: bigint
+        tests:
+          - not_null
+          - positive_values
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1440  # 24 hours max
+      - name: trip_duration_seconds
+        description: Duration of the trip in seconds
+        data_type: bigint
+        tests:
+          - not_null
+          - positive_values
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 86400  # 24 hours max in seconds
+      - name: start_hour
+        description: Hour of the day when the trip started (0-23)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 0
+              max_value: 23
+      - name: end_hour
+        description: Hour of the day when the trip ended (0-23)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 0
+              max_value: 23
+      - name: start_day_of_week
+        description: Day of the week when the trip started (1=Sunday, 7=Saturday)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 7
+      - name: end_day_of_week
+        description: Day of the week when the trip ended (1=Sunday, 7=Saturday)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 7
+      - name: is_peak_hour
+        description: Flag indicating if the trip started during peak hours (7-9 AM or 4-7 PM)
+        data_type: integer
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_weekend
+        description: Flag indicating if the trip started on a weekend
+        data_type: integer
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: distance_km
+        description: Distance traveled in kilometers, calculated using the haversine formula
+        data_type: double
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100  # Reasonable max distance in NYC
+      - name: distance_bucket
+        description: Categorized distance range (0-1 km, 1-4 km, 4-9 km, 10+ km)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['0-1 km', '1-4 km', '4-9 km', '10+ km']
+      - name: speed_kmh
+        description: Estimated average speed in kilometers per hour
+        data_type: double
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 50  # Reasonable max speed
+      - name: insurance_trip
+        description: Flag (1/0) indicating if the trip requires insurance (>30 minutes)
+        data_type: integer
+        tests:
+          - accepted_values:
+              values: [0, 1]
+      - name: pricing_tier
+        description: Pricing tier based on trip duration (standard, extended, premium)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['standard', 'extended', 'premium']
+      - name: is_round_trip
+        description: Flag indicating if the start and end stations are the same
+        data_type: integer
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_one_way_trip
+        description: Flag indicating if the start and end stations are different
+        data_type: integer
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: city
+        description: City where the trip took place (always 'nyc' in current dataset)
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['nyc']
+
+  - name: dim_bike
+    description: >
+      Bike type dimension following the Kimball pattern with a surrogate key.
+      Contains information on bike types available in the system with type 2 SCD tracking.
+      NOTE: Since actual bike types were not available in the source data, this dimension
+      contains standard bike types (electric_bike, classic_bike, docked_bike) that are 
+      assigned to trips algorithmically.
+    config:
+      materialized: table
+      contract:
+        enforced: true
+      tags: ["Dimensional Models"]
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: rideable_type_id
+      - expect_column_values_to_not_be_null:
+          column_name: rideable_type
+    columns:
+      - name: rideable_type_id
+        description: Surrogate key for the bike type dimension
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+      - name: rideable_type
+        description: Type of bike (electric_bike, classic_bike, or docked_bike)
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['electric_bike', 'classic_bike', 'docked_bike']
+      - name: bike_type_description
+        description: Full descriptive name of the bike type
+        data_type: varchar
+        tests:
+          - not_null
+      - name: propulsion_category
+        description: Category of propulsion (powered, manual, unknown)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['powered', 'manual', 'unknown']
+      - name: has_electric_assist
+        description: Boolean flag indicating if the bike has electric assistance
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: requires_docking
+        description: Boolean flag indicating if the bike requires a docking station
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: maintenance_interval_days
+        description: Recommended maintenance interval in days
+        data_type: integer
+        tests:
+          - positive_values
+      - name: price_multiplier
+        description: Price multiplier relative to standard bike
+        data_type: decimal(2,1)
+        tests:
+          - positive_values
+          - expect_column_values_to_be_between:
+              min_value: 0.5
+              max_value: 3.0
+      - name: is_current
+        description: Boolean flag indicating if this is the current record (SCD Type 2)
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: valid_from
+        description: Date from which this record is valid (SCD Type 2)
+        data_type: date
+        tests:
+          - not_null
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: valid_to
+        description: Date until which this record is valid (SCD Type 2)
+        data_type: date
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+
+  - name: dim_member
+    description: >
+      Member dimension following the Kimball pattern with a surrogate key.
+      Contains information on user types with membership benefits and SCD Type 2 tracking.
+      Member/casual values were extracted from the rideable_type field in the source data.
+    config:
+      materialized: table
+      contract:
+        enforced: true
+      tags: ["Dimensional Models"]
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: member_id
+      - expect_column_values_to_not_be_null:
+          column_name: member_casual
+    columns:
+      - name: member_id
+        description: Surrogate key for the member dimension
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+      - name: member_casual
+        description: Type of user (member or casual)
+        data_type: varchar
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['member', 'casual']
+      - name: membership_description
+        description: Full descriptive name of the membership type
+        data_type: varchar
+        tests:
+          - not_null
+      - name: membership_tier
+        description: Tier of membership (premium, basic, unknown)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['premium', 'basic', 'unknown']
+      - name: price_multiplier
+        description: Price multiplier based on membership status (members get 15% discount)
+        data_type: decimal(3,2)
+        tests:
+          - positive_values
+          - expect_column_values_to_be_between:
+              min_value: 0.5
+              max_value: 2.0
+      - name: has_unlimited_rides
+        description: Boolean flag indicating if the member has unlimited rides
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: has_priority_booking
+        description: Boolean flag indicating if the member has priority booking
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: max_ride_duration_minutes
+        description: Maximum standard ride duration in minutes before overage charges
+        data_type: integer
+        tests:
+          - positive_values
+          - expect_column_values_to_be_between:
+              min_value: 30
+              max_value: 180
+      - name: is_current
+        description: Boolean flag indicating if this is the current record (SCD Type 2)
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: valid_from
+        description: Date from which this record is valid (SCD Type 2)
+        data_type: date
+        tests:
+          - not_null
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: valid_to
+        description: Date until which this record is valid (SCD Type 2)
+        data_type: date
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+
+  - name: dim_start_date
+    description: >
+      Date dimension for the trip start date following the Kimball pattern.
+      Contains calendar attributes, seasonality, and holiday information for time-based analysis.
+    config:
+      materialized: table
+      contract:
+        enforced: true
+      tags: ["Dimensional Models"]
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: date_key
+      - expect_column_values_to_not_be_null:
+          column_name: date_key
+      - expect_column_values_to_be_increasing:
+          column_name: date_key
+    columns:
+      - name: date_key
+        description: Natural key for the date (YYYY-MM-DD)
+        data_type: date
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^\d{4}-\d{2}-\d{2}$'
+      - name: date_day
+        description: Date in date format
+        data_type: date
+        tests:
+          - not_null
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: year
+        description: Year number (YYYY)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 2020
+              max_value: "{{ (modules.datetime.datetime.now().year + 1) }}"
+      - name: month_number
+        description: Month number (1-12)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 12
+      - name: day_of_month
+        description: Day number within the month (1-31)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 31
+      - name: month_name
+        description: Full name of the month (January, February, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      - name: month_short_name
+        description: Short name of the month (Jan, Feb, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      - name: day_of_week
+        description: Day number within the week (1=Sunday, 7=Saturday)
+        data_type: integer
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 7
+      - name: day_name
+        description: Full name of the day (Monday, Tuesday, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+      - name: day_short_name
+        description: Short name of the day (Mon, Tue, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      - name: week_number
+        description: Week number within the year (1-53)
+        data_type: integer
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 53
+      - name: week_start_date
+        description: First day of the current week
+        data_type: date
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: week_end_date
+        description: Last day of the current week
+        data_type: date
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: quarter_number
+        description: Quarter number (1-4)
+        data_type: integer
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 4
+      - name: quarter_name
+        description: Short name of the quarter (Q1, Q2, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Q1', 'Q2', 'Q3', 'Q4']
+      - name: season
+        description: Season name (Winter, Spring, Summer, Fall)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Winter', 'Spring', 'Summer', 'Fall']
+      - name: is_holiday
+        description: Boolean flag indicating if the date is a holiday
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_weekend
+        description: Boolean flag indicating if the date is a weekend day
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_peak_season
+        description: Boolean flag indicating if the date is in peak bike season (May-Sep)
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_cycling_season
+        description: Boolean flag indicating if the date is in cycling season (Apr-Oct)
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: fiscal_year
+        description: Fiscal year (assuming fiscal year starts in October)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 2020
+              max_value: "{{ (modules.datetime.datetime.now().year + 1) }}"
+
+  - name: dim_end_date
+    description: >
+      Date dimension for the trip end date following the Kimball pattern.
+      Contains calendar attributes, seasonality, and holiday information for time-based analysis.
+    config:
+      materialized: table
+      contract:
+        enforced: true
+      tags: ["Dimensional Models"]
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: date_key
+      - expect_column_values_to_not_be_null:
+          column_name: date_key
+      - expect_column_values_to_be_increasing:
+          column_name: date_key
+    columns:
+      - name: date_key
+        description: Natural key for the date (YYYY-MM-DD)
+        data_type: date
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^\d{4}-\d{2}-\d{2}$'
+      - name: date_day
+        description: Date in date format
+        data_type: date
+        tests:
+          - not_null
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: year
+        description: Year number (YYYY)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 2020
+              max_value: "{{ (modules.datetime.datetime.now().year + 1) }}"
+      - name: month_number
+        description: Month number (1-12)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 12
+      - name: day_of_month
+        description: Day number within the month (1-31)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 31
+      - name: month_name
+        description: Full name of the month (January, February, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      - name: month_short_name
+        description: Short name of the month (Jan, Feb, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      - name: day_of_week
+        description: Day number within the week (1=Sunday, 7=Saturday)
+        data_type: integer
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 7
+      - name: day_name
+        description: Full name of the day (Monday, Tuesday, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+      - name: day_short_name
+        description: Short name of the day (Mon, Tue, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      - name: week_number
+        description: Week number within the year (1-53)
+        data_type: integer
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 53
+      - name: week_start_date
+        description: First day of the current week
+        data_type: date
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: week_end_date
+        description: Last day of the current week
+        data_type: date
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: date
+      - name: quarter_number
+        description: Quarter number (1-4)
+        data_type: integer
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 4
+      - name: quarter_name
+        description: Short name of the quarter (Q1, Q2, etc.)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Q1', 'Q2', 'Q3', 'Q4']
+      - name: season
+        description: Season name (Winter, Spring, Summer, Fall)
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['Winter', 'Spring', 'Summer', 'Fall']
+      - name: is_holiday
+        description: Boolean flag indicating if the date is a holiday
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_weekend
+        description: Boolean flag indicating if the date is a weekend day
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_peak_season
+        description: Boolean flag indicating if the date is in peak bike season (May-Sep)
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_cycling_season
+        description: Boolean flag indicating if the date is in cycling season (Apr-Oct)
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: fiscal_year
+        description: Fiscal year (assuming fiscal year starts in October)
+        data_type: bigint
+        tests:
+          - value_between:
+              min_value: 2020
+              max_value: "{{ (modules.datetime.datetime.now().year + 1) }}"
+
+  - name: dim_station
+    description: >
+      Conformed dimension containing both start and end stations following the Kimball pattern.
+      This model consolidates station information from both start and end stations into a single dimension.
+    config:
+      materialized: table
+      contract:
+        enforced: true
+      tags: ["Dimensional Models"]
+    tests:
+      - expect_column_values_to_be_unique:
+          column_name: station_id
+      - expect_column_values_to_not_be_null:
+          column_name: station_id
+      - valid_geo_coordinates:
+          lat_column: latitude
+          lng_column: longitude
+    columns:
+      - name: station_id
+        description: Surrogate key for the station dimension
+        data_type: varchar
+        tests:
+          - not_null
+          - unique
+      - name: original_station_id
+        description: Original ID from the source system
+        data_type: varchar
+        tests:
+          - not_null
+          - expect_column_values_to_match_regex:
+              regex: '^[A-Za-z0-9.]+$'
+      - name: station_name
+        description: Name of the station
+        data_type: varchar
+        tests:
+          - not_null
+      - name: latitude
+        description: Latitude coordinate of the station
+        data_type: double
+        tests:
+          - value_between:
+              min_value: 40.5
+              max_value: 41.0
+      - name: longitude
+        description: Longitude coordinate of the station
+        data_type: double
+        tests:
+          - value_between:
+              min_value: -74.1
+              max_value: -73.7
+      - name: station_type
+        description: Type of station derived from name pattern
+        data_type: varchar
+        tests:
+          - accepted_values:
+              values: ['bike_dock', 'virtual', 'hub', 'transit', 'mixed']
+      - name: capacity
+        description: Capacity of the station (when available)
+        data_type: integer
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 100
+      - name: is_electric
+        description: Boolean flag indicating if the station has electric charging
+        data_type: boolean
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean

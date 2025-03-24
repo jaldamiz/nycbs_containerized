@@ -1,0 +1,18 @@
+
+
+with validation as (
+    select
+        start_station_id as column_value
+    from "test"."raw_raw"."tripdata_ext"
+),
+
+validation_errors as (
+    select
+        column_value
+    from validation
+    where column_value is not null
+    and regexp_matches(cast(column_value as varchar), '^[A-Za-z0-9.]+$') = false
+)
+
+select count(*) from validation_errors
+

@@ -1,0 +1,387 @@
+version: 2
+
+# Project Information
+# ------------------
+# Project Name: NYC Bike Sharing System Analytics
+# Version: 1.0.0
+# Last Updated: 2023-06-15
+# Author: NYC Bike Analytics Team
+# Contact: data@nycbike.example.com
+
+models:
+  - name: trip_analysis
+    config:
+      contract:
+        enforced: true
+      tags: ["Analytical Models"]
+    description: >
+      Monthly analytics on trip patterns, designed for business users to understand 
+      ridership patterns by bike type, member type, and seasonal trends.
+    columns:
+      - name: start_year
+        data_type: bigint
+        description: Year of trip start date
+        tests:
+          - not_null
+      - name: start_month
+        data_type: varchar
+        description: Month name of trip start date
+        tests:
+          - not_null
+      - name: start_season
+        data_type: varchar
+        description: Season of trip start date (Winter, Spring, Summer, Fall)
+      - name: start_is_peak_season
+        data_type: boolean
+        description: Indicates if the trip occurred during peak biking season
+      - name: propulsion_category
+        data_type: varchar  
+        description: Categorization of bike propulsion (manual, powered, unknown)
+        tests:
+          - accepted_values:
+              values: ['powered', 'manual', 'unknown']
+      - name: rideable_type
+        data_type: varchar
+        description: Type of bike used for the trip
+        tests:
+          - accepted_values:
+              values: ['electric_bike', 'classic_bike', 'docked_bike']
+      - name: member_casual
+        data_type: varchar
+        description: Indicates whether the rider is a member or casual rider
+        tests:
+          - accepted_values:
+              values: ['member', 'casual']
+      - name: trip_count
+        data_type: bigint
+        description: Total number of trips in this group
+        tests:
+          - not_null
+          - positive_values
+          - expect_column_sum_to_be_between:
+              min_sum: 1
+              max_sum: 100000000
+      - name: avg_trip_duration
+        data_type: double
+        description: Average trip duration in minutes
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1440
+          - positive_values
+      - name: avg_distance
+        data_type: double
+        description: Average trip distance in kilometers
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+          - positive_values
+      - name: avg_speed
+        data_type: double
+        description: Average speed in kilometers per hour
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 50
+          - positive_values
+      - name: estimated_total_revenue
+        data_type: decimal(38,5)
+        description: Estimated total revenue generated from trips in USD
+      - name: avg_revenue_per_trip
+        data_type: double
+        description: Average revenue per trip in USD
+      - name: insurance_required_trips
+        data_type: hugeint
+        description: Number of trips that required insurance
+      - name: pct_insurance_trips
+        data_type: double
+        description: Percentage of trips that required insurance
+      - name: maintenance_flag_count
+        data_type: hugeint
+        description: Number of trips that triggered maintenance flags
+      - name: round_trip_count
+        data_type: hugeint
+        description: Number of round trips (same start and end station)
+      - name: pct_round_trips
+        data_type: double
+        description: Percentage of trips that were round trips
+      - name: morning_commute_trips
+        data_type: hugeint
+        description: Number of trips during morning commute hours (7-9 AM)
+      - name: evening_commute_trips
+        data_type: hugeint
+        description: Number of trips during evening commute hours (4-7 PM)
+      - name: weekend_trips
+        data_type: hugeint
+        description: Number of trips on weekends
+      - name: pct_weekend_trips
+        data_type: double
+        description: Percentage of trips that occurred on weekends
+    tests:
+      - expect_column_values_to_not_be_null:
+          column_name: start_month
+      - expect_column_values_to_not_be_null:
+          column_name: start_year
+      - expect_column_values_to_not_be_null:
+          column_name: trip_count
+
+  - name: station_analysis
+    config:
+      contract:
+        enforced: true
+      tags: ["Analytical Models"]
+    description: >
+      Analytical model that provides insights into station usage patterns,
+      including metrics like total arrivals, departures, peak hours, and user demographics.
+    columns:
+      - name: station_id
+        data_type: varchar
+        description: Unique identifier for the station
+        tests:
+          - not_null
+          - unique
+      - name: station_name
+        data_type: varchar
+        description: Full name of the station
+        tests:
+          - not_null
+      - name: latitude
+        data_type: double
+        description: Station latitude coordinate
+        tests:
+          - value_between:
+              min_value: 40.5  # NYC latitude bounds
+              max_value: 41.0
+      - name: longitude
+        data_type: double
+        description: Station longitude coordinate
+        tests:
+          - value_between:
+              min_value: -74.1  # NYC longitude bounds
+              max_value: -73.7
+      - name: station_type
+        data_type: varchar
+        description: Type of station (bike_dock, virtual, hub, transit, mixed)
+        tests:
+          - accepted_values:
+              values: ['bike_dock', 'virtual', 'hub', 'transit', 'mixed']
+      - name: total_departures
+        data_type: bigint
+        description: Total number of trips starting from this station
+        tests:
+          - not_null
+          - positive_values
+      - name: total_arrivals
+        data_type: bigint
+        description: Total number of trips ending at this station
+        tests:
+          - positive_values
+      - name: net_flow
+        data_type: bigint
+        description: Net difference between departures and arrivals (negative means more arrivals)
+        tests:
+          - not_null
+      - name: peak_departure_hour
+        data_type: bigint
+        description: Hour of day with the most departures (0-23)
+        tests:
+          - value_between:
+              min_value: 0
+              max_value: 23
+      - name: peak_arrival_hour
+        data_type: bigint
+        description: Hour of day with the most arrivals (0-23)
+        tests:
+          - value_between:
+              min_value: 0
+              max_value: 23
+      - name: member_trip_pct
+        data_type: double
+        description: Percentage of trips made by members
+        tests:
+          - valid_percentage
+      - name: casual_trip_pct
+        data_type: double
+        description: Percentage of trips made by casual riders
+        tests:
+          - valid_percentage
+      - name: avg_trip_duration
+        data_type: double
+        description: Average trip duration in minutes for trips starting at this station
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1440
+          - positive_values
+      - name: weekend_usage_pct
+        data_type: double
+        description: Percentage of trips occurring on weekends
+        tests:
+          - valid_percentage
+      - name: night_usage_pct
+        data_type: double
+        description: Percentage of trips occurring at night (8PM-6AM)
+        tests:
+          - valid_percentage
+      - name: popular_destinations
+        data_type: varchar
+        description: Top 3 destination stations with trip counts
+      - name: electric_bike_pct
+        data_type: double
+        description: Percentage of trips using electric bikes
+        tests:
+          - valid_percentage
+      - name: rebalancing_need
+        data_type: varchar
+        description: Categorized need for rebalancing based on net flow
+        tests:
+          - accepted_values:
+              values: ['High', 'Medium', 'Low', 'None']
+      - name: city
+        data_type: varchar
+        description: City where the station is located (always 'nyc' in current dataset)
+        tests:
+          - accepted_values:
+              values: ['nyc']
+
+  - name: temporal_analysis
+    description: >
+      Analytical model that focuses on time-based patterns and trends in bike usage.
+      This model provides insights about seasonal variations, day-of-week patterns,
+      and hour-of-day usage to support capacity planning and marketing decisions.
+    config:
+      materialized: table
+      tags: ["Analytical Models"]
+    tests:
+      - expect_column_values_to_not_be_null:
+          column_name: analysis_date
+      - expect_column_values_to_not_be_null:
+          column_name: total_trips
+      - expect_column_values_to_be_increasing:
+          column_name: analysis_date
+    columns:
+      - name: analysis_date
+        description: Date of analysis (YYYY-MM-DD)
+        tests:
+          - not_null
+          - unique
+          - expect_column_values_to_match_regex:
+              regex: '^\d{4}-\d{2}-\d{2}$'
+      - name: year
+        description: Year of analysis
+        tests:
+          - not_null
+          - value_between:
+              min_value: 2020
+              max_value: "{{ (modules.datetime.datetime.now().year) }}"
+      - name: month
+        description: Month of analysis
+        tests:
+          - not_null
+          - value_between:
+              min_value: 1
+              max_value: 12
+      - name: day_of_month
+        description: Day of month
+        tests:
+          - not_null
+          - value_between:
+              min_value: 1
+              max_value: 31
+      - name: day_of_week
+        description: Day of week (1=Sunday, 7=Saturday)
+        tests:
+          - not_null
+          - value_between:
+              min_value: 1
+              max_value: 7
+      - name: is_weekend
+        description: Flag indicating if the day is a weekend
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: is_holiday
+        description: Flag indicating if the day is a holiday
+        tests:
+          - expect_column_values_to_be_of_type:
+              type_name: boolean
+      - name: season
+        description: Season (Winter, Spring, Summer, Fall)
+        tests:
+          - accepted_values:
+              values: ['Winter', 'Spring', 'Summer', 'Fall']
+      - name: total_trips
+        description: Total number of trips on this date
+        tests:
+          - not_null
+          - positive_values
+      - name: member_trips
+        description: Number of trips by members
+        tests:
+          - not_null
+          - positive_values
+      - name: casual_trips
+        description: Number of trips by casual users
+        tests:
+          - not_null
+          - positive_values
+      - name: member_pct
+        description: Percentage of trips by members
+        tests:
+          - valid_percentage
+      - name: morning_trips
+        description: Number of trips during morning hours (6am-12pm)
+        tests:
+          - positive_values
+      - name: afternoon_trips
+        description: Number of trips during afternoon hours (12pm-5pm)
+        tests:
+          - positive_values
+      - name: evening_trips
+        description: Number of trips during evening hours (5pm-8pm)
+        tests:
+          - positive_values
+      - name: night_trips
+        description: Number of trips during night hours (8pm-6am)
+        tests:
+          - positive_values
+      - name: avg_trip_duration
+        description: Average trip duration in minutes
+        tests:
+          - positive_values
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1440  # 24 hours max
+      - name: peak_hour
+        description: Hour with the most trips
+        tests:
+          - value_between:
+              min_value: 0
+              max_value: 23
+      - name: electric_bike_pct
+        description: Percentage of trips using electric bikes
+        tests:
+          - valid_percentage
+      - name: temperature
+        description: Average temperature for the day (when available)
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: -20
+              max_value: 45
+      - name: precipitation
+        description: Precipitation amount for the day (when available)
+        tests:
+          - expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 100
+      - name: weather_impact
+        description: Estimated impact of weather on trip volume
+        tests:
+          - accepted_values:
+              values: ['Positive', 'Neutral', 'Slight Negative', 'Strong Negative']
+      - name: city
+        description: City where the trips took place (always 'nyc' in current dataset)
+        tests:
+          - accepted_values:
+              values: ['nyc'] 

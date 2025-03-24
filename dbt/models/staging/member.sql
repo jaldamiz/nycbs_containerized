@@ -1,18 +1,17 @@
-with 
+{{
+  config(
+    materialized = 'table'
+  )
+}}
 
-source as (
-
-    select * from {{ source('raw', 'tripdata') }}
-
+with source as (
+    select * from {{ ref('tripdata_ext') }}
 ),
 
 renamed as (
-
     select distinct
-        member_casual
-
+        source.member_casual -- Now correctly mapped from the source data
     from source
-
 )
 
 select * from renamed
