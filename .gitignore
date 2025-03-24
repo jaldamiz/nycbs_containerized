@@ -67,3 +67,6 @@ healthcheck:
     - "/bin/sh"
     - "-c"
     - "curl -f 'http://localhost:8888/api/status?token=${JUPYTER_TOKEN}' && curl -f 'http://localhost:8501/_stcore/health'" 
+
+dbt/dev.duckdb
+dbt/prod.duckdb
